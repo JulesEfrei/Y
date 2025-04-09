@@ -7,6 +7,7 @@ type User {
   posts: [Post!]
   comments: [Comment!]
   likes: [Like!]
+  commentLikes: [CommentLike!]
 }
 
 type Category {
@@ -39,6 +40,8 @@ type Comment {
   post: Post!
   parent: Comment
   replies: [Comment!]
+  likes: [CommentLike!]!
+  likesCount: Int!
 }
 
 type Like {
@@ -46,6 +49,13 @@ type Like {
   createdAt: String!
   user: User!
   post: Post!
+}
+
+type CommentLike {
+  id: ID!
+  createdAt: String!
+  user: User!
+  comment: Comment!
 }
 
 type AuthPayload {
@@ -101,6 +111,20 @@ type LikeResponse implements MutationResponse {
   like: Like
 }
 
+# CommentLike mutation responses
+type CommentLikeResponse implements MutationResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+  commentLike: CommentLike
+}
+
+# Résultat de recherche paginé avec compte total
+type PostSearchResult {
+  posts: [Post!]!
+  totalCount: Int!
+}
+
 type Query {
   me: User
   users: [User!]!
@@ -108,6 +132,7 @@ type Query {
   categories: [Category!]!
   category(id: ID!): Category
   posts(page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
+  searchPosts(search: String!, page: Int = 1, limit: Int = 20, offset: Int = 0): PostSearchResult!
   postsByCategory(categoryId: ID!, page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
   post(id: ID!): Post
   postComments(postId: ID!): [Comment!]!
@@ -137,4 +162,5 @@ type Mutation {
 
   # Likes
   toggleLike(postId: ID!): LikeResponse!
+  toggleCommentLike(commentId: ID!): CommentLikeResponse!
 }

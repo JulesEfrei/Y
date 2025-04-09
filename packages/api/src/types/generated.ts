@@ -57,10 +57,28 @@ export type Comment = {
   content: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  likes: Array<CommentLike>;
+  likesCount: Scalars['Int']['output'];
   parent?: Maybe<Comment>;
   post: Post;
   replies?: Maybe<Array<Comment>>;
   updatedAt: Scalars['String']['output'];
+};
+
+export type CommentLike = {
+  __typename?: 'CommentLike';
+  comment: Comment;
+  createdAt: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  user: User;
+};
+
+export type CommentLikeResponse = MutationResponse & {
+  __typename?: 'CommentLikeResponse';
+  code: Scalars['Int']['output'];
+  commentLike?: Maybe<CommentLike>;
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
 };
 
 export type CommentResponse = MutationResponse & {
@@ -98,6 +116,7 @@ export type Mutation = {
   replyToComment: CommentResponse;
   signIn: AuthResponse;
   signUp: AuthResponse;
+  toggleCommentLike: CommentLikeResponse;
   toggleLike: LikeResponse;
   updateCategory: CategoryResponse;
   updateComment: CommentResponse;
@@ -157,6 +176,11 @@ export type MutationSignUpArgs = {
 };
 
 
+export type MutationToggleCommentLikeArgs = {
+  commentId: Scalars['ID']['input'];
+};
+
+
 export type MutationToggleLikeArgs = {
   postId: Scalars['ID']['input'];
 };
@@ -209,6 +233,12 @@ export type PostResponse = MutationResponse & {
   success: Scalars['Boolean']['output'];
 };
 
+export type PostSearchResult = {
+  __typename?: 'PostSearchResult';
+  posts: Array<Post>;
+  totalCount: Scalars['Int']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   categories: Array<Category>;
@@ -219,6 +249,7 @@ export type Query = {
   postComments: Array<Comment>;
   posts: Array<Post>;
   postsByCategory: Array<Post>;
+  searchPosts: PostSearchResult;
   user?: Maybe<User>;
   users: Array<User>;
 };
@@ -259,12 +290,21 @@ export type QueryPostsByCategoryArgs = {
 };
 
 
+export type QuerySearchPostsArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  search: Scalars['String']['input'];
+};
+
+
 export type QueryUserArgs = {
   id: Scalars['ID']['input'];
 };
 
 export type User = {
   __typename?: 'User';
+  commentLikes?: Maybe<Array<CommentLike>>;
   comments?: Maybe<Array<Comment>>;
   createdAt: Scalars['String']['output'];
   email: Scalars['String']['output'];
@@ -345,7 +385,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
-  MutationResponse: ( Omit<AuthResponse, 'user'> & { user?: Maybe<_RefType['User']> } ) | ( Omit<CategoryResponse, 'category'> & { category?: Maybe<_RefType['Category']> } ) | ( Omit<CommentResponse, 'comment'> & { comment?: Maybe<_RefType['Comment']> } ) | ( Omit<LikeResponse, 'like'> & { like?: Maybe<_RefType['Like']> } ) | ( Omit<PostResponse, 'post'> & { post?: Maybe<_RefType['Post']> } );
+  MutationResponse: ( Omit<AuthResponse, 'user'> & { user?: Maybe<_RefType['User']> } ) | ( Omit<CategoryResponse, 'category'> & { category?: Maybe<_RefType['Category']> } ) | ( Omit<CommentLikeResponse, 'commentLike'> & { commentLike?: Maybe<_RefType['CommentLike']> } ) | ( Omit<CommentResponse, 'comment'> & { comment?: Maybe<_RefType['Comment']> } ) | ( Omit<LikeResponse, 'like'> & { like?: Maybe<_RefType['Like']> } ) | ( Omit<PostResponse, 'post'> & { post?: Maybe<_RefType['Post']> } );
 };
 
 /** Mapping between all available schema types and the resolvers types */
@@ -356,6 +396,8 @@ export type ResolversTypes = {
   Category: ResolverTypeWrapper<Omit<Category, 'posts'> & { posts?: Maybe<Array<ResolversTypes['Post']>> }>;
   CategoryResponse: ResolverTypeWrapper<Omit<CategoryResponse, 'category'> & { category?: Maybe<ResolversTypes['Category']> }>;
   Comment: ResolverTypeWrapper<Comment>;
+  CommentLike: ResolverTypeWrapper<Omit<CommentLike, 'comment' | 'user'> & { comment: ResolversTypes['Comment'], user: ResolversTypes['User'] }>;
+  CommentLikeResponse: ResolverTypeWrapper<Omit<CommentLikeResponse, 'commentLike'> & { commentLike?: Maybe<ResolversTypes['CommentLike']> }>;
   CommentResponse: ResolverTypeWrapper<Omit<CommentResponse, 'comment'> & { comment?: Maybe<ResolversTypes['Comment']> }>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -365,6 +407,7 @@ export type ResolversTypes = {
   MutationResponse: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['MutationResponse']>;
   Post: ResolverTypeWrapper<Post>;
   PostResponse: ResolverTypeWrapper<Omit<PostResponse, 'post'> & { post?: Maybe<ResolversTypes['Post']> }>;
+  PostSearchResult: ResolverTypeWrapper<Omit<PostSearchResult, 'posts'> & { posts: Array<ResolversTypes['Post']> }>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   User: ResolverTypeWrapper<User>;
@@ -378,6 +421,8 @@ export type ResolversParentTypes = {
   Category: Omit<Category, 'posts'> & { posts?: Maybe<Array<ResolversParentTypes['Post']>> };
   CategoryResponse: Omit<CategoryResponse, 'category'> & { category?: Maybe<ResolversParentTypes['Category']> };
   Comment: Comment;
+  CommentLike: Omit<CommentLike, 'comment' | 'user'> & { comment: ResolversParentTypes['Comment'], user: ResolversParentTypes['User'] };
+  CommentLikeResponse: Omit<CommentLikeResponse, 'commentLike'> & { commentLike?: Maybe<ResolversParentTypes['CommentLike']> };
   CommentResponse: Omit<CommentResponse, 'comment'> & { comment?: Maybe<ResolversParentTypes['Comment']> };
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
@@ -387,6 +432,7 @@ export type ResolversParentTypes = {
   MutationResponse: ResolversInterfaceTypes<ResolversParentTypes>['MutationResponse'];
   Post: Post;
   PostResponse: Omit<PostResponse, 'post'> & { post?: Maybe<ResolversParentTypes['Post']> };
+  PostSearchResult: Omit<PostSearchResult, 'posts'> & { posts: Array<ResolversParentTypes['Post']> };
   Query: {};
   String: Scalars['String']['output'];
   User: User;
@@ -429,10 +475,28 @@ export type CommentResolvers<ContextType = Context, ParentType extends Resolvers
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  likes?: Resolver<Array<ResolversTypes['CommentLike']>, ParentType, ContextType>;
+  likesCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   parent?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>;
   post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   replies?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CommentLikeResolvers<ContextType = Context, ParentType extends ResolversParentTypes['CommentLike'] = ResolversParentTypes['CommentLike']> = {
+  comment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CommentLikeResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['CommentLikeResponse'] = ResolversParentTypes['CommentLikeResponse']> = {
+  code?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  commentLike?: Resolver<Maybe<ResolversTypes['CommentLike']>, ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -470,6 +534,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   replyToComment?: Resolver<ResolversTypes['CommentResponse'], ParentType, ContextType, RequireFields<MutationReplyToCommentArgs, 'commentId' | 'content'>>;
   signIn?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInArgs, 'email' | 'password'>>;
   signUp?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'email' | 'name' | 'password'>>;
+  toggleCommentLike?: Resolver<ResolversTypes['CommentLikeResponse'], ParentType, ContextType, RequireFields<MutationToggleCommentLikeArgs, 'commentId'>>;
   toggleLike?: Resolver<ResolversTypes['LikeResponse'], ParentType, ContextType, RequireFields<MutationToggleLikeArgs, 'postId'>>;
   updateCategory?: Resolver<ResolversTypes['CategoryResponse'], ParentType, ContextType, RequireFields<MutationUpdateCategoryArgs, 'id' | 'name'>>;
   updateComment?: Resolver<ResolversTypes['CommentResponse'], ParentType, ContextType, RequireFields<MutationUpdateCommentArgs, 'content' | 'id'>>;
@@ -477,7 +542,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
 };
 
 export type MutationResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MutationResponse'] = ResolversParentTypes['MutationResponse']> = {
-  __resolveType: TypeResolveFn<'AuthResponse' | 'CategoryResponse' | 'CommentResponse' | 'LikeResponse' | 'PostResponse', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthResponse' | 'CategoryResponse' | 'CommentLikeResponse' | 'CommentResponse' | 'LikeResponse' | 'PostResponse', ParentType, ContextType>;
   code?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -505,6 +570,12 @@ export type PostResponseResolvers<ContextType = Context, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type PostSearchResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PostSearchResult'] = ResolversParentTypes['PostSearchResult']> = {
+  posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   categories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType>;
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;
@@ -514,11 +585,13 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
   postComments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<QueryPostCommentsArgs, 'postId'>>;
   posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostsArgs, 'limit' | 'offset' | 'page'>>;
   postsByCategory?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostsByCategoryArgs, 'categoryId' | 'limit' | 'offset' | 'page'>>;
+  searchPosts?: Resolver<ResolversTypes['PostSearchResult'], ParentType, ContextType, RequireFields<QuerySearchPostsArgs, 'limit' | 'offset' | 'page' | 'search'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
 };
 
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  commentLikes?: Resolver<Maybe<Array<ResolversTypes['CommentLike']>>, ParentType, ContextType>;
   comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -536,6 +609,8 @@ export type Resolvers<ContextType = Context> = {
   Category?: CategoryResolvers<ContextType>;
   CategoryResponse?: CategoryResponseResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
+  CommentLike?: CommentLikeResolvers<ContextType>;
+  CommentLikeResponse?: CommentLikeResponseResolvers<ContextType>;
   CommentResponse?: CommentResponseResolvers<ContextType>;
   Like?: LikeResolvers<ContextType>;
   LikeResponse?: LikeResponseResolvers<ContextType>;
@@ -543,6 +618,7 @@ export type Resolvers<ContextType = Context> = {
   MutationResponse?: MutationResponseResolvers<ContextType>;
   Post?: PostResolvers<ContextType>;
   PostResponse?: PostResponseResolvers<ContextType>;
+  PostSearchResult?: PostSearchResultResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 };

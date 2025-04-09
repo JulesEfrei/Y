@@ -8,15 +8,16 @@ generator client {
 }
 
 model User {
-    id        String    @id @default(uuid())
-    email     String    @unique
-    password  String
-    name      String
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    posts     Post[]    @relation("UserPosts")
-    comments  Comment[] @relation("UserComments")
-    likes     Like[]    @relation("UserLikes")
+    id           String        @id @default(uuid())
+    email        String        @unique
+    password     String
+    name         String
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    posts        Post[]        @relation("UserPosts")
+    comments     Comment[]     @relation("UserComments")
+    likes        Like[]        @relation("UserLikes")
+    commentLikes CommentLike[] @relation("UserCommentLikes")
 }
 
 model Category {
@@ -42,17 +43,19 @@ model Post {
 }
 
 model Comment {
-    id        String   @id @default(uuid())
-    content   String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    author    User     @relation("UserComments", fields: [authorId], references: [id])
-    authorId  String
-    post      Post     @relation("PostComments", fields: [postId], references: [id])
-    postId    String
-    parentId  String?
-    parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
-    replies   Comment[] @relation("CommentReplies")
+    id           String        @id @default(uuid())
+    content      String
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    author       User          @relation("UserComments", fields: [authorId], references: [id])
+    authorId     String
+    post         Post          @relation("PostComments", fields: [postId], references: [id])
+    postId       String
+    parentId     String?
+    parent       Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+    replies      Comment[]     @relation("CommentReplies")
+    likes        CommentLike[] @relation("CommentLikes")
+    likesCount   Int           @default(0)
 }
 
 model Like {
@@ -64,4 +67,15 @@ model Like {
     postId    String
 
     @@unique([userId, postId])
+}
+
+model CommentLike {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    user      User     @relation("UserCommentLikes", fields: [userId], references: [id])
+    userId    String
+    comment   Comment  @relation("CommentLikes", fields: [commentId], references: [id])
+    commentId String
+
+    @@unique([userId, commentId])
 }

@@ -66,6 +66,38 @@ export const resolvers: Resolvers = {
       });
       return formatPrismaResults(posts);
     },
+    searchPosts: async (
+      _,
+      { search, page = 1, limit = 20, offset = 0 },
+      { prisma }
+    ) => {
+      const skip = (page - 1) * limit + offset;
+
+      const searchLower = search.toLowerCase();
+
+      const searchCriteria = {
+        OR: [
+          { title: { contains: searchLower } },
+          { content: { contains: searchLower } },
+        ],
+      };
+
+      const [posts, totalCount] = await Promise.all([
+        prisma.post.findMany({
+          where: searchCriteria,
+          take: limit,
+          skip: skip,
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.post.count({
+          where: searchCriteria,
+        }),
+      ]);
+      return {
+        posts: formatPrismaResults(posts),
+        totalCount,
+      };
+    },
     postsByCategory: async (
       _,
       { categoryId, page = 1, limit = 20, offset = 0 },
@@ -522,6 +554,65 @@ export const resolvers: Resolvers = {
         return handlePrismaError(error);
       }
     },
+
+    toggleCommentLike: async (_, { commentId }, context) => {
+      try {
+        assertAuthenticated(context);
+
+        const comment = await context.prisma.comment.findUnique({
+          where: { id: commentId },
+        });
+
+        if (!comment) {
+          return createErrorResponse(ErrorCode.NOT_FOUND, "Comment not found");
+        }
+
+        const existingLike = await context.prisma.commentLike.findUnique({
+          where: { userId_commentId: { userId: context.user.id, commentId } },
+        });
+        if (existingLike) {
+          const [deletedLike, _] = await context.prisma.$transaction([
+            context.prisma.commentLike.delete({
+              where: {
+                userId_commentId: { userId: context.user.id, commentId },
+              },
+            }),
+            context.prisma.comment.update({
+              where: { id: commentId },
+              data: { likesCount: { decrement: 1 } },
+            }),
+          ]);
+
+          return createSuccessResponse(
+            { commentLike: null },
+            "Comment like removed successfully"
+          );
+        } else {
+          const [newLike, _] = await context.prisma.$transaction([
+            context.prisma.commentLike.create({
+              data: { userId: context.user.id, commentId },
+            }),
+            context.prisma.comment.update({
+              where: { id: commentId },
+              data: { likesCount: { increment: 1 } },
+            }),
+          ]);
+
+          return createSuccessResponse(
+            { commentLike: formatDates(newLike) },
+            "Comment liked successfully"
+          );
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message === "Not authenticated") {
+          return createErrorResponse(
+            ErrorCode.UNAUTHENTICATED,
+            "You must be logged in to like a comment"
+          );
+        }
+        return handlePrismaError(error);
+      }
+    },
   },
 
   User: {
@@ -538,6 +629,12 @@ export const resolvers: Resolvers = {
     likes: async ({ id }, _, { prisma }) => {
       const likes = await prisma.like.findMany({ where: { userId: id } });
       return formatPrismaResults(likes);
+    },
+    commentLikes: async ({ id }, _, { prisma }) => {
+      const commentLikes = await prisma.commentLike.findMany({
+        where: { userId: id },
+      });
+      return formatPrismaResults(commentLikes);
     },
   },
 
@@ -601,6 +698,13 @@ export const resolvers: Resolvers = {
       });
       return formatPrismaResults(replies);
     },
+    likes: async ({ id }, _, { prisma }) => {
+      const likes = await prisma.commentLike.findMany({
+        where: { commentId: id },
+      });
+      return formatPrismaResults(likes);
+    },
+    likesCount: ({ likesCount }, _, __) => likesCount,
   },
 
   Like: {
@@ -615,6 +719,32 @@ export const resolvers: Resolvers = {
         where: { id: postId },
       });
       return formatDates(post);
+    },
+  },
+
+  CommentLike: {
+    user: async (parent, _, { prisma }) => {
+      const userId = (parent as any).userId || (parent as any).user?.id;
+      if (!userId) {
+        throw new Error("User ID not found in CommentLike");
+      }
+
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+      });
+      return formatDates(user);
+    },
+    comment: async (parent, _, { prisma }) => {
+      const commentId =
+        (parent as any).commentId || (parent as any).comment?.id;
+      if (!commentId) {
+        throw new Error("Comment ID not found in CommentLike");
+      }
+
+      const comment = await prisma.comment.findUniqueOrThrow({
+        where: { id: commentId },
+      });
+      return formatDates(comment);
     },
   },
 };
