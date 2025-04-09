@@ -19,16 +19,26 @@ model User {
     likes     Like[]    @relation("UserLikes")
 }
 
+model Category {
+    id        String   @id @default(uuid())
+    name      String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    posts     Post[]   @relation("CategoryPosts")
+}
+
 model Post {
-    id        String    @id @default(uuid())
-    title     String
-    content   String
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    author    User      @relation("UserPosts", fields: [authorId], references: [id])
-    authorId  String
-    comments  Comment[] @relation("PostComments")
-    likes     Like[]    @relation("PostLikes")
+    id         String    @id @default(uuid())
+    title      String
+    content    String
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    author     User      @relation("UserPosts", fields: [authorId], references: [id])
+    authorId   String
+    category   Category? @relation("CategoryPosts", fields: [categoryId], references: [id])
+    categoryId String?
+    comments   Comment[] @relation("PostComments")
+    likes      Like[]    @relation("PostLikes")
 }
 
 model Comment {
@@ -40,6 +50,9 @@ model Comment {
     authorId  String
     post      Post     @relation("PostComments", fields: [postId], references: [id])
     postId    String
+    parentId  String?
+    parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+    replies   Comment[] @relation("CommentReplies")
 }
 
 model Like {

@@ -9,6 +9,14 @@ type User {
   likes: [Like!]
 }
 
+type Category {
+  id: ID!
+  name: String!
+  createdAt: String!
+  updatedAt: String!
+  posts: [Post!]
+}
+
 type Post {
   id: ID!
   title: String!
@@ -16,6 +24,7 @@ type Post {
   createdAt: String!
   updatedAt: String!
   author: User!
+  category: Category
   comments: [Comment!]
   likes: [Like!]!
   likesCount: Int!
@@ -28,6 +37,8 @@ type Comment {
   updatedAt: String!
   author: User!
   post: Post!
+  parent: Comment
+  replies: [Comment!]
 }
 
 type Like {
@@ -58,6 +69,14 @@ type AuthResponse implements MutationResponse {
   user: User
 }
 
+# Category mutation responses
+type CategoryResponse implements MutationResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+  category: Category
+}
+
 # Post mutation responses
 type PostResponse implements MutationResponse {
   code: Int!
@@ -86,9 +105,13 @@ type Query {
   me: User
   users: [User!]!
   user(id: ID!): User
+  categories: [Category!]!
+  category(id: ID!): Category
   posts(page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
+  postsByCategory(categoryId: ID!, page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
   post(id: ID!): Post
   postComments(postId: ID!): [Comment!]!
+  commentReplies(commentId: ID!): [Comment!]!
 }
 
 type Mutation {
@@ -96,13 +119,19 @@ type Mutation {
   signUp(email: String!, password: String!, name: String!): AuthResponse!
   signIn(email: String!, password: String!): AuthResponse!
 
+  # Categories
+  createCategory(name: String!): CategoryResponse!
+  updateCategory(id: ID!, name: String!): CategoryResponse!
+  deleteCategory(id: ID!): CategoryResponse!
+
   # Posts
-  createPost(title: String!, content: String!): PostResponse!
-  updatePost(id: ID!, title: String, content: String): PostResponse!
+  createPost(title: String!, content: String!, categoryName: String): PostResponse!
+  updatePost(id: ID!, title: String, content: String, categoryName: String): PostResponse!
   deletePost(id: ID!): PostResponse!
 
   # Comments
   createComment(postId: ID!, content: String!): CommentResponse!
+  replyToComment(commentId: ID!, content: String!): CommentResponse!
   updateComment(id: ID!, content: String!): CommentResponse!
   deleteComment(id: ID!): CommentResponse!
 
