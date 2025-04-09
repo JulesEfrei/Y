@@ -1,0 +1,111 @@
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  createdAt: String!
+  updatedAt: String!
+  posts: [Post!]
+  comments: [Comment!]
+  likes: [Like!]
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  createdAt: String!
+  updatedAt: String!
+  author: User!
+  comments: [Comment!]
+  likes: [Like!]!
+  likesCount: Int!
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  createdAt: String!
+  updatedAt: String!
+  author: User!
+  post: Post!
+}
+
+type Like {
+  id: ID!
+  createdAt: String!
+  user: User!
+  post: Post!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+# Standard response interface for mutations
+interface MutationResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+}
+
+# Auth mutation responses
+type AuthResponse implements MutationResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+  token: String
+  user: User
+}
+
+# Post mutation responses
+type PostResponse implements MutationResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+  post: Post
+}
+
+# Comment mutation responses
+type CommentResponse implements MutationResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+  comment: Comment
+}
+
+# Like mutation responses
+type LikeResponse implements MutationResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+  like: Like
+}
+
+type Query {
+  me: User
+  users: [User!]!
+  user(id: ID!): User
+  posts(page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
+  post(id: ID!): Post
+  postComments(postId: ID!): [Comment!]!
+}
+
+type Mutation {
+  # Auth
+  signUp(email: String!, password: String!, name: String!): AuthResponse!
+  signIn(email: String!, password: String!): AuthResponse!
+
+  # Posts
+  createPost(title: String!, content: String!): PostResponse!
+  updatePost(id: ID!, title: String, content: String): PostResponse!
+  deletePost(id: ID!): PostResponse!
+
+  # Comments
+  createComment(postId: ID!, content: String!): CommentResponse!
+  updateComment(id: ID!, content: String!): CommentResponse!
+  deleteComment(id: ID!): CommentResponse!
+
+  # Likes
+  toggleLike(postId: ID!): LikeResponse!
+}
