@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/form";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { gql } from "@/__generated__";
 import { SIGN_UP } from "@/lib/queries";
 
 // Form schema with validation

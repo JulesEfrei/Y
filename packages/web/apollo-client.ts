@@ -1,4 +1,9 @@
-import { ApolloClient, InMemoryCache, createHttpLink, from } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  from,
+} from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
 export default function createApolloClient() {
@@ -9,12 +14,12 @@ export default function createApolloClient() {
   const authLink = setContext((_, { headers }) => {
     // Get the authentication token from local storage if it exists
     let token = null;
-    
+
     // Check if we're in a browser environment
     if (typeof window !== "undefined") {
       token = localStorage.getItem("token");
     }
-    
+
     // Return the headers to the context so httpLink can read them
     return {
       headers: {
