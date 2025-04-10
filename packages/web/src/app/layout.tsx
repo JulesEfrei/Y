@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body suppressHydrationWarning className={inter.className}>
         <ApolloWrapper>
           <AuthProvider>
             <NavBar />

@@ -54,14 +54,17 @@ export const GET_POST = gql(`
 
 // GraphQL mutation for creating a post
 export const CREATE_POST = gql(`
-  mutation CreatePost($title: String!, $content: String!) {
-    createPost(title: $title, content: $content) {
+  mutation CreatePost($title: String!, $content: String!, $categoryName: String) {
+    createPost(title: $title, content: $content, categoryName: $categoryName) {
       code
       success
       message
       post {
         id
         title
+        category {
+          name
+        }
       }
     }
   }
@@ -138,6 +141,16 @@ export const UPDATE_POST = gql(`
         title
         content
       }
+    }
+  }
+`);
+
+// GraphQL query to get all categories
+export const GET_CATEGORIES = gql(`
+  query Categories {
+    categories {
+      id
+      name
     }
   }
 `);

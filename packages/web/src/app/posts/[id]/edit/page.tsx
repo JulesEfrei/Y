@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, gql } from "@apollo/client";
 import { GET_POST, UPDATE_POST } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,23 +13,91 @@ import BackButton from "@/components/button/BackButton";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function EditPostPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+const GET_CATEGORIES = gql`
+  query Categories {
+    categories {
+      id
+      name
+    }
+  }
+`;
+
+const CREATE_CATEGORY = gql`
+  mutation CreateCategory($name: String!) {
+    createCategory(name: $name) {
+      code
+      success
+      message
+      category {
+        id
+        name
+      }
+    }
+  }
+`;
+
+// Remplacer UPDATE_POST importé par une version locale qui inclut categoryName
+const UPDATE_POST_MUTATION = gql`
+  mutation UpdatePost($id: ID!, $title: String, $content: String, $categoryName: String) {
+    updatePost(id: $id, title: $title, content: $content, categoryName: $categoryName) {
+      code
+      success
+      message
+      post {
+        id
+        title
+        content
+        category {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+export default function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const { id } = resolvedParams;
   const router = useRouter();
   const { user } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [categoryName, setCategoryName] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch the post data
   const { data, loading, error } = useQuery(GET_POST, {
     variables: { postId: id },
     fetchPolicy: "network-only",
   });
 
-  // Update post mutation
-  const [updatePost] = useMutation(UPDATE_POST, {
+  const { data: categoriesData, loading: loadingCategories, refetch } = useQuery(GET_CATEGORIES);
+
+  const [createCategory, { loading: creatingCategory }] = useMutation(CREATE_CATEGORY, {
+    onCompleted: (data: any) => {
+      if (data.createCategory.success) {
+        toast.success("Category created successfully");
+        setCategoryName(data.createCategory.category.name);
+        setNewCategoryName("");
+        setShowNewCategoryInput(false);
+        refetch(); // Refresh categories list
+      } else {
+        toast.error("Error creating category", {
+          description: data.createCategory.message
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast.error("Error creating category", {
+        description: error.message
+      });
+    }
+  });
+
+  const [updatePost] = useMutation(UPDATE_POST_MUTATION, {
     onCompleted: (data) => {
       setIsSubmitting(false);
       if (data.updatePost.success) {
@@ -51,15 +119,16 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     },
   });
 
-  // Set form values when post data is loaded
   useEffect(() => {
     if (data?.post) {
       setTitle(data.post.title);
       setContent(data.post.content);
+      if (data.post.category) {
+        setCategoryName(data.post.category.name);
+      }
     }
   }, [data]);
 
-  // Check if the current user is the author of the post
   useEffect(() => {
     if (data?.post && user) {
       if (data.post.author.id !== user.id) {
@@ -71,7 +140,6 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     }
   }, [data, user, router, id]);
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!user && !loading) {
       toast.error("destructive", {
@@ -81,23 +149,40 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     }
   }, [user, loading, router, id]);
 
+  const handleCreateCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newCategoryName.trim()) {
+      return;
+    }
+
+    createCategory({
+      variables: {
+        name: newCategoryName.trim()
+      }
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
 
     setIsSubmitting(true);
+    const finalCategoryName = showNewCategoryInput ? newCategoryName : categoryName;
+
     updatePost({
       variables: {
         id,
         title: title.trim(),
         content: content.trim(),
+        categoryName: finalCategoryName || undefined
       },
     });
   };
 
   if (loading) {
     return (
-      <div className="container max-w-4xl mx-auto py-8 px-4 flex justify-center">
+      <div suppressHydrationWarning className="container max-w-4xl mx-auto py-8 px-4 flex justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -105,7 +190,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
   if (error) {
     return (
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div suppressHydrationWarning className="container max-w-4xl mx-auto py-8 px-4">
         <Card>
           <CardContent className="pt-6">
             <p className="text-red-500">Error loading post: {error.message}</p>
@@ -123,7 +208,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
   if (!data?.post) {
     return (
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div suppressHydrationWarning className="container max-w-4xl mx-auto py-8 px-4">
         <Card>
           <CardContent className="pt-6">
             <p>Post not found</p>
@@ -137,7 +222,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
+    <div suppressHydrationWarning className="container max-w-4xl mx-auto py-8 px-4">
       <BackButton />
 
       <Card className="mt-4">
@@ -158,6 +243,70 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
                 required
                 disabled={isSubmitting}
               />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="category" className="text-sm font-medium">
+                Category (optional)
+              </label>
+              
+              {!showNewCategoryInput ? (
+                <div className="flex gap-2">
+                  <select
+                    id="category"
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isSubmitting}
+                  >
+                    <option value="">Select a category (optional)</option>
+                    {categoriesData?.categories?.map((cat: any) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowNewCategoryInput(true)}
+                    disabled={isSubmitting}
+                  >
+                    New
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Enter new category name"
+                    disabled={isSubmitting || creatingCategory}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCreateCategory}
+                    disabled={isSubmitting || creatingCategory}
+                  >
+                    {creatingCategory ? "Creating..." : "Create"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setShowNewCategoryInput(false);
+                      setNewCategoryName("");
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                Select an existing category or create a new one
+              </p>
             </div>
 
             <div className="space-y-2">

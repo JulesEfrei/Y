@@ -25,7 +25,7 @@ export default async function Home({
 }: {
   searchParams: { page?: string };
 }) {
-  const page = Number(await searchParams.page) || 1;
+  const page = 1;
   const limit = 20;
 
   const client = createApolloClient();
@@ -38,11 +38,26 @@ export default async function Home({
   const hasNextPage = posts.length === limit;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-950 dark:via-purple-950 dark:to-indigo-950 py-24 px-4 relative overflow-hidden">
-        <div className="container mx-auto max-w-6xl relative z-10">
-          <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-            <div className="bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-full mb-6 flex items-center gap-2">
+    <div
+      suppressHydrationWarning
+      className="min-h-screen bg-gray-50 dark:bg-gray-900"
+    >
+      <div
+        suppressHydrationWarning
+        className="bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-950 dark:via-purple-950 dark:to-indigo-950 py-24 px-4 relative overflow-hidden"
+      >
+        <div
+          suppressHydrationWarning
+          className="container mx-auto max-w-6xl relative z-10"
+        >
+          <div
+            suppressHydrationWarning
+            className="flex flex-col items-center text-center max-w-3xl mx-auto"
+          >
+            <div
+              suppressHydrationWarning
+              className="bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-full mb-6 flex items-center gap-2"
+            >
               <span className="inline-block">New</span>
               <span>We've just released a new feature →</span>
             </div>
@@ -58,7 +73,10 @@ export default async function Home({
               effortlessly but also enhances your overall efficiency.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div
+              suppressHydrationWarning
+              className="flex flex-col sm:flex-row gap-4"
+            >
               <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700">
                 Get Started
               </Button>
@@ -73,17 +91,35 @@ export default async function Home({
           </div>
         </div>
 
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div
+          suppressHydrationWarning
+          className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"
+        ></div>
+        <div
+          suppressHydrationWarning
+          className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"
+        ></div>
+        <div
+          suppressHydrationWarning
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"
+        ></div>
       </div>
 
-      <div className="container mx-auto max-w-6xl px-4 py-12">
+      <div
+        suppressHydrationWarning
+        className="container mx-auto max-w-6xl px-4 py-12"
+      >
         <h2 className="text-3xl font-bold mb-8">Latest Posts</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          suppressHydrationWarning
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           {posts.length === 0 ? (
-            <div className="col-span-full text-center py-8">
+            <div
+              suppressHydrationWarning
+              className="col-span-full text-center py-8"
+            >
               <p className="text-gray-500">No posts yet. Be the first</p>
             </div>
           ) : (
@@ -102,8 +138,14 @@ export default async function Home({
                   </p>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
+                  <div
+                    suppressHydrationWarning
+                    className="flex items-center gap-2"
+                  >
+                    <div
+                      suppressHydrationWarning
+                      className="flex items-center gap-1"
+                    >
                       <Heart size={16} className="text-red-500" />
                       <span className="text-sm">{post.likesCount}</span>
                     </div>
@@ -122,7 +164,7 @@ export default async function Home({
           )}
         </div>
 
-        <div className="mt-10">
+        <div suppressHydrationWarning className="mt-10">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
