@@ -7,8 +7,8 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { useApolloClient } from "@apollo/client";
-import { gql } from "@/__generated__";
+import { useApolloClient, gql } from "@apollo/client";
+import { gql as generatedGql } from "@/__generated__";
 
 // Add this to your AuthContext type
 type User = {
@@ -29,7 +29,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // GraphQL query to get the current user
-const ME_QUERY = gql(`
+const ME_QUERY = generatedGql(`
   query Me {
     me {
       id
@@ -38,6 +38,16 @@ const ME_QUERY = gql(`
     }
   }
 `);
+
+// GraphQL mutation for signout
+const SIGN_OUT_MUTATION = gql`
+  mutation SignOut {
+    signOut {
+      success
+      message
+    }
+  }
+`;
 
 // Auth provider component
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -61,35 +71,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error fetching user:", error);
       setUser(null);
-      // Clear token if there's an authentication error
-      localStorage.removeItem("token");
+      // Pas besoin de supprimer les tokens du localStorage comme avant
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Check for token and fetch user on mount
+  // Check for user session on mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      fetchUser();
-    } else {
-      setIsLoading(false);
-    }
+    fetchUser();
   }, []);
 
   // Login function
+  // On prend toujours le token en paramètre pour garder la même interface que before,
+  // mais on ne l'enregistre plus dans le localStorage car le cookie est défini par le backend
   const login = (token: string) => {
-    localStorage.setItem("token", token);
     fetchUser();
   };
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    // Reset Apollo cache
-    client.resetStore();
+  // Logout function - maintenant fait une requête au serveur pour invalider le cookie
+  const logout = async () => {
+    try {
+      await client.mutate({
+        mutation: SIGN_OUT_MUTATION,
+      });
+      setUser(null);
+      // Reset Apollo cache
+      client.resetStore();
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
   };
 
   return (

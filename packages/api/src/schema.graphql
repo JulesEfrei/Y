@@ -133,6 +133,7 @@ type Query {
   category(id: ID!): Category
   posts(page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
   searchPosts(search: String!, page: Int = 1, limit: Int = 20, offset: Int = 0): PostSearchResult!
+  popularPosts(page: Int = 1, limit: Int = 20, offset: Int = 0): PostSearchResult!
   postsByCategory(categoryId: ID!, page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
   post(id: ID!): Post
   postComments(postId: ID!): [Comment!]!
@@ -143,6 +144,7 @@ type Mutation {
   # Auth
   signUp(email: String!, password: String!, name: String!): AuthResponse!
   signIn(email: String!, password: String!): AuthResponse!
+  signOut: MutationResponse!
 
   # Categories
   createCategory(name: String!): CategoryResponse!

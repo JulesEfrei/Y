@@ -9,28 +9,14 @@ import { setContext } from "@apollo/client/link/context";
 export default function createApolloClient() {
   const httpLink = createHttpLink({
     uri: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/graphql",
+    // Activer l'envoi automatique des cookies avec les requêtes
+    credentials: 'include',
   });
 
-  const authLink = setContext((_, { headers }) => {
-    // Get the authentication token from local storage if it exists
-    let token = null;
-
-    // Check if we're in a browser environment
-    if (typeof window !== "undefined") {
-      token = localStorage.getItem("token");
-    }
-
-    // Return the headers to the context so httpLink can read them
-    return {
-      headers: {
-        ...headers,
-        authorization: token ? `Bearer ${token}` : "",
-      },
-    };
-  });
-
+  // Plus besoin d'ajouter manuellement le token dans les headers
+  // Les cookies seront automatiquement envoyés avec chaque requête
   return new ApolloClient({
-    link: from([authLink, httpLink]),
+    link: httpLink,
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {

@@ -1,9 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import type { JwtPayload } from "jsonwebtoken";
+import type { ServerResponse } from "http";
 
 export interface Context {
   prisma: PrismaClient;
   user?: JwtPayload & { id: string };
+  res?: ServerResponse;
 }
 
 export interface AuthContext extends Context {

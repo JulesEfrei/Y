@@ -115,6 +115,7 @@ export type Mutation = {
   deletePost: PostResponse;
   replyToComment: CommentResponse;
   signIn: AuthResponse;
+  signOut: MutationResponse;
   signUp: AuthResponse;
   toggleCommentLike: CommentLikeResponse;
   toggleLike: LikeResponse;
@@ -245,6 +246,7 @@ export type Query = {
   category?: Maybe<Category>;
   commentReplies: Array<Comment>;
   me?: Maybe<User>;
+  popularPosts: PostSearchResult;
   post?: Maybe<Post>;
   postComments: Array<Comment>;
   posts: Array<Post>;
@@ -262,6 +264,13 @@ export type QueryCategoryArgs = {
 
 export type QueryCommentRepliesArgs = {
   commentId: Scalars['ID']['input'];
+};
+
+
+export type QueryPopularPostsArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -533,6 +542,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   deletePost?: Resolver<ResolversTypes['PostResponse'], ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'id'>>;
   replyToComment?: Resolver<ResolversTypes['CommentResponse'], ParentType, ContextType, RequireFields<MutationReplyToCommentArgs, 'commentId' | 'content'>>;
   signIn?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInArgs, 'email' | 'password'>>;
+  signOut?: Resolver<ResolversTypes['MutationResponse'], ParentType, ContextType>;
   signUp?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'email' | 'name' | 'password'>>;
   toggleCommentLike?: Resolver<ResolversTypes['CommentLikeResponse'], ParentType, ContextType, RequireFields<MutationToggleCommentLikeArgs, 'commentId'>>;
   toggleLike?: Resolver<ResolversTypes['LikeResponse'], ParentType, ContextType, RequireFields<MutationToggleLikeArgs, 'postId'>>;
@@ -581,6 +591,7 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;
   commentReplies?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<QueryCommentRepliesArgs, 'commentId'>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  popularPosts?: Resolver<ResolversTypes['PostSearchResult'], ParentType, ContextType, RequireFields<QueryPopularPostsArgs, 'limit' | 'offset' | 'page'>>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
   postComments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<QueryPostCommentsArgs, 'postId'>>;
   posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostsArgs, 'limit' | 'offset' | 'page'>>;

@@ -19,6 +19,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { GET_POSTS } from "@/lib/queries";
+import { gql } from "@apollo/client";
+
+// Requête pour obtenir l'utilisateur actuel
+const GET_CURRENT_USER = gql`
+  query Me {
+    me {
+      id
+      name
+      email
+    }
+  }
+`;
 
 export default async function Home({
   searchParams,
@@ -29,12 +41,23 @@ export default async function Home({
   const limit = 20;
 
   const client = createApolloClient();
-  const { data } = await client.query({
-    query: GET_POSTS,
-    variables: { page, limit },
-  });
+  
+  // Récupérer les posts et l'utilisateur connecté en parallèle
+  const [postsResponse, currentUserResponse] = await Promise.all([
+    client.query({
+      query: GET_POSTS,
+      variables: { page, limit },
+    }),
+    client.query({
+      query: GET_CURRENT_USER,
+    }).catch(error => {
+      console.error("Error fetching current user:", error);
+      return { data: { me: null } };
+    })
+  ]);
 
-  const posts = data?.posts || [];
+  const posts = postsResponse.data?.posts || [];
+  const currentUser = currentUserResponse.data?.me || null;
   const hasNextPage = posts.length === limit;
 
   return (
@@ -123,44 +146,56 @@ export default async function Home({
               <p className="text-gray-500">No posts yet. Be the first</p>
             </div>
           ) : (
-            posts.map((post) => (
-              <Card
-                key={post.id}
-                className="overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl">{post.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    By {post.author.name} •{" "}
-                    {format(new Date(parseInt(post.createdAt)), "MMM dd, yyyy")}
-                  </p>
-                </CardContent>
-                <CardFooter className="flex justify-between items-center">
-                  <div
-                    suppressHydrationWarning
-                    className="flex items-center gap-2"
-                  >
+            posts.map((post) => {
+              // Vérifier si le post a été créé par l'utilisateur connecté
+              const isUserPost = currentUser && post.author.id === currentUser.id;
+              
+              return (
+                <Card
+                  key={post.id}
+                  className="overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-xl">{post.title}</CardTitle>
+                      {isUserPost && (
+                        <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          MON POST
+                        </div>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      By {post.author.name} •{" "}
+                      {format(new Date(parseInt(post.createdAt)), "MMM dd, yyyy")}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="flex justify-between items-center">
                     <div
                       suppressHydrationWarning
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-2"
                     >
-                      <Heart size={16} className="text-red-500" />
-                      <span className="text-sm">{post.likesCount}</span>
+                      <div
+                        suppressHydrationWarning
+                        className="flex items-center gap-1"
+                      >
+                        <Heart size={16} className="text-red-500" />
+                        <span className="text-sm">{post.likesCount}</span>
+                      </div>
+                      {post.category && (
+                        <span className="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full dark:bg-indigo-900 dark:text-indigo-200">
+                          {post.category.name}
+                        </span>
+                      )}
                     </div>
-                    {post.category && (
-                      <span className="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full dark:bg-indigo-900 dark:text-indigo-200">
-                        {post.category.name}
-                      </span>
-                    )}
-                  </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/posts/${post.id}`}>Read more</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/posts/${post.id}`}>Read more</Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })
           )}
         </div>
 
