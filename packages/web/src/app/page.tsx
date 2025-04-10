@@ -14,60 +14,37 @@ import {
   GET_CATEGORIES,
   SEARCH_POSTS,
   POSTS_BY_CATEGORY,
+  GET_POPULAR_POSTS,
 } from "@/lib/queries";
-import { gql } from "@apollo/client";
 import { PromptCard } from "@/components/card/PromptCard";
 import { Post } from "@/__generated__/graphql";
 import { SearchAndFilterContainer } from "@/components/search/SearchAndFilterContainer";
 import { SearchIndicator } from "@/components/search/SearchIndicator";
 
-// Query for current user
-const GET_CURRENT_USER = gql`
-  query Me {
-    me {
-      id
-      name
-      email
-    }
-  }
-`;
-
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { page?: string; search?: string; category?: string };
+  searchParams: {
+    page?: string;
+    search?: string;
+    category?: string;
+    sort?: string;
+  };
 }) {
   const page = Number((await searchParams).page) || 1;
   const search = (await searchParams).search || "";
   const categoryId = (await searchParams).category || "";
+  const sort = (await searchParams).sort || "latest"; // Default sort is latest
   const limit = 20;
 
   const client = createApolloClient();
 
-  // Fetch categories for the filter
   const { data: categoriesData } = await client.query({
     query: GET_CATEGORIES,
   });
 
   const categories = categoriesData?.categories || [];
 
-  // Récupérer l'utilisateur connecté
-  const { data: currentUserResponse } = await client
-    .query({
-      query: GET_CURRENT_USER,
-      errorPolicy: "ignore", // Ignorer les erreurs d'authentification
-    })
-    .catch(() => {
-      // En cas d'erreur (non authentifié), on retourne un objet avec data: null
-      return { data: null };
-    });
-
-  const currentUser = currentUserResponse?.me || null;
-
-  // Ajouter un log côté serveur pour debug (visible uniquement dans les logs serveur)
-  console.log("Page - Current User:", currentUser);
-
-  // Fetch posts based on search/filter criteria
   let postsData;
   let totalCount = 0;
 
@@ -80,14 +57,12 @@ export default async function Home({
     totalCount = data?.searchPosts.totalCount || 0;
   } else if (categoryId) {
     try {
-      // Vérifier si l'ID de catégorie est valide (doit être un UUID complet)
       if (
         !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
           categoryId
         )
       ) {
         console.error("ID de catégorie invalide:", categoryId);
-        // Si l'ID est invalide, afficher simplement tous les posts au lieu de planter
         const { data } = await client.query({
           query: GET_POSTS,
           variables: { page, limit },
@@ -107,7 +82,6 @@ export default async function Home({
         "Erreur lors de la récupération des posts par catégorie:",
         error
       );
-      // En cas d'erreur, afficher tous les posts
       const { data } = await client.query({
         query: GET_POSTS,
         variables: { page, limit },
@@ -115,6 +89,13 @@ export default async function Home({
       postsData = data?.posts.posts || [];
       totalCount = data?.posts.totalCount || 0;
     }
+  } else if (sort === "most_liked") {
+    const { data } = await client.query({
+      query: GET_POPULAR_POSTS,
+      variables: { page, limit },
+    });
+    postsData = data?.popularPosts.posts || [];
+    totalCount = data?.popularPosts.totalCount || 0;
   } else {
     const { data } = await client.query({
       query: GET_POSTS,
@@ -128,27 +109,11 @@ export default async function Home({
   const hasNextPage = totalCount > page * limit;
 
   return (
-    <div
-      className="min-h-screen bg-gray-50 dark:bg-gray-900"
-      suppressHydrationWarning={true}
-    >
-      {/* Hero section remains unchanged */}
-      <div
-        className="bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-950 dark:via-purple-950 dark:to-indigo-950 py-24 px-4 relative overflow-hidden"
-        suppressHydrationWarning={true}
-      >
-        <div
-          className="container mx-auto max-w-6xl relative z-10"
-          suppressHydrationWarning={true}
-        >
-          <div
-            className="flex flex-col items-center text-center max-w-3xl mx-auto"
-            suppressHydrationWarning={true}
-          >
-            <div
-              className="bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-full mb-6 flex items-center gap-2"
-              suppressHydrationWarning={true}
-            >
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-950 dark:via-purple-950 dark:to-indigo-950 py-24 px-4 relative overflow-hidden">
+        <div className="container mx-auto max-w-6xl relative z-10">
+          <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
+            <div className="bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-full mb-6 flex items-center gap-2">
               <span className="inline-block">New</span>
               <span>We've just released Y →</span>
             </div>
@@ -165,10 +130,7 @@ export default async function Home({
               the community's collection.
             </p>
 
-            <div
-              className="flex flex-col sm:flex-row gap-4"
-              suppressHydrationWarning={true}
-            >
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
                 className="bg-indigo-600 hover:bg-indigo-700"
@@ -186,25 +148,20 @@ export default async function Home({
             background:
               "radial-gradient(circle at center, rgba(255,255,255,0) 0%, rgba(0,0,0,0.1) 100%)",
           }}
-          suppressHydrationWarning={true}
         ></div>
       </div>
 
-      <div
-        className="container mx-auto max-w-6xl px-4 py-12"
-        suppressHydrationWarning={true}
-      >
-        <h2 className="text-3xl font-bold mb-8">Latest Prompts</h2>
+      <div className="container mx-auto max-w-6xl px-4 py-12">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold">Latest Prompts</h2>
+        </div>
 
-        <div className="mb-8" suppressHydrationWarning={true}>
+        <div className="mb-8">
           <SearchAndFilterContainer categories={categories} />
           <SearchIndicator />
         </div>
 
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          suppressHydrationWarning={true}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {posts.length === 0 ? (
             <div className="col-span-full text-center py-8">
               <p className="text-gray-500">
@@ -220,14 +177,16 @@ export default async function Home({
           )}
         </div>
 
-        <div className="mt-12" suppressHydrationWarning={true}>
+        <div className="mt-12">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
                   href={`/?page=${Math.max(1, page - 1)}${
                     search ? `&search=${search}` : ""
-                  }${categoryId ? `&category=${categoryId}` : ""}`}
+                  }${categoryId ? `&category=${categoryId}` : ""}${
+                    sort ? `&sort=${sort}` : ""
+                  }`}
                   className={page <= 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
@@ -237,7 +196,7 @@ export default async function Home({
                   <Link
                     href={`/?page=1${search ? `&search=${search}` : ""}${
                       categoryId ? `&category=${categoryId}` : ""
-                    }`}
+                    }${sort ? `&sort=${sort}` : ""}`}
                     className="px-4 py-2 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     1
@@ -287,7 +246,9 @@ export default async function Home({
                 <PaginationNext
                   href={`/?page=${page + 1}${
                     search ? `&search=${search}` : ""
-                  }${categoryId ? `&category=${categoryId}` : ""}`}
+                  }${categoryId ? `&category=${categoryId}` : ""}${
+                    sort ? `&sort=${sort}` : ""
+                  }`}
                   className={
                     !hasNextPage ? "pointer-events-none opacity-50" : ""
                   }

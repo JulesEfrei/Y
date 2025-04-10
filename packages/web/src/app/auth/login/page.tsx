@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/form";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { gql } from "@/__generated__";
 import { SIGN_IN } from "@/lib/queries";
 
 // Define the form schema with Zod

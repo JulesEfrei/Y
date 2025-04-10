@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { notFound } from "next/navigation";
-import { User, MessageSquare, Tag } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { User, MessageSquare } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import CopyButton from "@/components/button/CopyButton";
 import CommentForm from "@/components/form/CommentForm";
@@ -11,7 +10,6 @@ import createApolloClient from "../../../../apollo-client";
 import { GET_POST } from "@/lib/queries";
 
 import EditPostButton from "@/components/button/EditPostButton";
-import CommentLikeButton from "@/components/button/CommentLikeButton";
 import CommentWithReplies from "@/components/comment/CommentWithReplies";
 
 export default async function PostPage({
@@ -99,7 +97,6 @@ export default async function PostPage({
                 No comments yet. Be the first to comment!
               </p>
             ) : (
-              // Filter to only show top-level comments (those without a parent)
               post.comments
                 ?.filter((comment) => !comment.parent)
                 .map((comment) => (

@@ -22,15 +22,15 @@ export default function NavBar() {
   }
 
   return (
-    <div suppressHydrationWarning className="sticky top-0 left-0 right-0 border-b bg-background z-50">
-      <div suppressHydrationWarning className="flex h-16 items-center justify-between p-4 max-w-7xl mx-auto">
-        <div suppressHydrationWarning>
+    <div className="sticky top-0 left-0 right-0 border-b bg-background z-50">
+      <div className="flex h-16 items-center justify-between p-4 max-w-7xl mx-auto">
+        <div>
           <Link href="/" className="text-xl font-bold">
             Y
           </Link>
         </div>
 
-        <div suppressHydrationWarning className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
           {user && (
             <Button variant="outline" size="sm" asChild>
               <Link href="/posts/new" className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export default function NavBar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div suppressHydrationWarning className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <Button variant="ghost" asChild>
                 <Link href="/auth/login">Login</Link>
               </Button>

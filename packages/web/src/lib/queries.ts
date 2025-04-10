@@ -276,3 +276,48 @@ export const REPLY_TO_COMMENT = gql(`
     }
   }
 `);
+
+// Query for current user
+export const GET_CURRENT_USER = gql(`
+  query Me {
+    me {
+      id
+      name
+      email
+    }
+  }
+`);
+
+// GraphQL mutation for signout
+export const SIGN_OUT_MUTATION = gql(`
+  mutation SignOut {
+    signOut {
+      success
+      message
+    }
+  }
+`);
+
+// Add this to your existing queries
+export const GET_POPULAR_POSTS = gql(`
+  query GetPopularPosts($page: Int, $limit: Int) {
+    popularPosts(page: $page, limit: $limit) {
+      posts {
+        id
+        title
+        content
+        createdAt
+        likesCount
+        author {
+          id
+          name
+        }
+        category {
+          id
+          name
+        }
+      }
+      totalCount
+    }
+  }
+`);

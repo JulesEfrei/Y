@@ -24,37 +24,31 @@ export const postMutations: MutationResolvers = {
         try {
           // Normaliser le nom de la catégorie (trim et lowercase)
           const normalizedCategoryName = categoryName.trim().toLowerCase();
-          
+
           // Rechercher la catégorie de manière plus robuste
           let category = await context.prisma.category.findFirst({
-            where: { 
-              name: { 
+            where: {
+              name: {
                 equals: normalizedCategoryName,
-                // Note: mode: 'insensitive' n'est pas supporté par certaines versions de Prisma
-                // Nous utilisons toLowerCase() pour la comparaison insensible à la casse
-              } 
+              },
             },
           });
 
           if (!category) {
-            // Si la catégorie n'existe pas, essayer de la créer avec gestion d'erreur
             try {
               category = await context.prisma.category.create({
                 data: { name: normalizedCategoryName },
               });
             } catch (categoryError: any) {
-              // Si l'erreur est due à une contrainte d'unicité, essayer de récupérer la catégorie une nouvelle fois
-              // (cas d'une race condition)
-              if (categoryError.code === 'P2002') {
-                // Une seconde tentative de recherche, peut-être qu'elle a été créée entre-temps
+              if (categoryError.code === "P2002") {
                 category = await context.prisma.category.findFirst({
-                  where: { 
-                    name: { 
-                      equals: normalizedCategoryName
-                    } 
+                  where: {
+                    name: {
+                      equals: normalizedCategoryName,
+                    },
                   },
                 });
-                
+
                 // Si on ne trouve toujours pas la catégorie, propager l'erreur
                 if (!category) {
                   throw categoryError;

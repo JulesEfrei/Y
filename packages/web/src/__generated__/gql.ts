@@ -14,9 +14,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  query Me {\n    me {\n      id\n      name\n      email\n    }\n  }\n": typeof types.MeDocument,
     "\n  mutation SignOut {\n    signOut {\n      success\n      message\n    }\n  }\n": typeof types.SignOutDocument,
-    "\n  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {\n    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": typeof types.PostsByCategoryDocument,
     "\n  query Posts($page: Int, $limit: Int) {\n    posts(page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": typeof types.PostsDocument,
     "\n  query Post($postId: ID!) {\n    post(id: $postId) {\n      id\n      title\n      content\n      createdAt\n      likesCount\n      category {\n        name\n      }\n      author {\n        id\n        name\n      }\n      likes {\n        user {\n          id\n        }\n      }\n      comments {\n        id\n        content\n        createdAt\n        likesCount\n        author {\n          name\n        }\n        likes {\n          user {\n            id\n          }\n        }\n        parent {\n          id\n        }\n        replies {\n          id\n          content\n          createdAt\n          likesCount\n          author {\n            name\n          }\n          likes {\n            user {\n              id\n            }\n          }\n        }\n      }\n    }\n  }\n": typeof types.PostDocument,
     "\n  mutation CreatePost($title: String!, $content: String!, $categoryName: String) {\n    createPost(title: $title, content: $content, categoryName: $categoryName) {\n      code\n      success\n      message\n      post {\n        id\n        title\n        category {\n          name\n        }\n      }\n    }\n  }\n": typeof types.CreatePostDocument,
@@ -27,14 +25,15 @@ type Documents = {
     "\n  mutation UpdatePost($id: ID!, $title: String, $content: String, $categoryName: String) {\n    updatePost(id: $id, title: $title, content: $content, categoryName: $categoryName) {\n      code\n      success\n      message\n      post {\n        id\n        title\n        content\n        category {\n          id\n          name\n        }\n      }\n    }\n  }\n": typeof types.UpdatePostDocument,
     "\n  query Categories {\n    categories {\n      id\n      name\n    }\n  }\n": typeof types.CategoriesDocument,
     "\n  query SearchPosts($search: String!, $page: Int, $limit: Int) {\n    searchPosts(search: $search, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": typeof types.SearchPostsDocument,
+    "\n  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {\n    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": typeof types.PostsByCategoryDocument,
     "\n  mutation CreateCategory($name: String!) {\n    createCategory(name: $name) {\n      code\n      success\n      message\n      category {\n        id\n        name\n      }\n    }\n  }\n": typeof types.CreateCategoryDocument,
     "\n  mutation ToggleCommentLike($commentId: ID!) {\n    toggleCommentLike(commentId: $commentId) {\n      code\n      success\n      message\n    }\n  }\n": typeof types.ToggleCommentLikeDocument,
     "\n  mutation ReplyToComment($commentId: ID!, $content: String!) {\n    replyToComment(commentId: $commentId, content: $content) {\n      code\n      success\n      message\n      comment {\n        id\n        content\n        createdAt\n        author {\n          name\n        }\n        parent {\n          id\n        }\n      }\n    }\n  }\n": typeof types.ReplyToCommentDocument,
+    "\n  query Me {\n    me {\n      id\n      name\n      email\n    }\n  }\n": typeof types.MeDocument,
+    "\n  query GetPopularPosts($page: Int, $limit: Int) {\n    popularPosts(page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        content\n        createdAt\n        likesCount\n        author {\n          id\n          name\n        }\n        category {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": typeof types.GetPopularPostsDocument,
 };
 const documents: Documents = {
-    "\n  query Me {\n    me {\n      id\n      name\n      email\n    }\n  }\n": types.MeDocument,
     "\n  mutation SignOut {\n    signOut {\n      success\n      message\n    }\n  }\n": types.SignOutDocument,
-    "\n  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {\n    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": types.PostsByCategoryDocument,
     "\n  query Posts($page: Int, $limit: Int) {\n    posts(page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": types.PostsDocument,
     "\n  query Post($postId: ID!) {\n    post(id: $postId) {\n      id\n      title\n      content\n      createdAt\n      likesCount\n      category {\n        name\n      }\n      author {\n        id\n        name\n      }\n      likes {\n        user {\n          id\n        }\n      }\n      comments {\n        id\n        content\n        createdAt\n        likesCount\n        author {\n          name\n        }\n        likes {\n          user {\n            id\n          }\n        }\n        parent {\n          id\n        }\n        replies {\n          id\n          content\n          createdAt\n          likesCount\n          author {\n            name\n          }\n          likes {\n            user {\n              id\n            }\n          }\n        }\n      }\n    }\n  }\n": types.PostDocument,
     "\n  mutation CreatePost($title: String!, $content: String!, $categoryName: String) {\n    createPost(title: $title, content: $content, categoryName: $categoryName) {\n      code\n      success\n      message\n      post {\n        id\n        title\n        category {\n          name\n        }\n      }\n    }\n  }\n": types.CreatePostDocument,
@@ -45,9 +44,12 @@ const documents: Documents = {
     "\n  mutation UpdatePost($id: ID!, $title: String, $content: String, $categoryName: String) {\n    updatePost(id: $id, title: $title, content: $content, categoryName: $categoryName) {\n      code\n      success\n      message\n      post {\n        id\n        title\n        content\n        category {\n          id\n          name\n        }\n      }\n    }\n  }\n": types.UpdatePostDocument,
     "\n  query Categories {\n    categories {\n      id\n      name\n    }\n  }\n": types.CategoriesDocument,
     "\n  query SearchPosts($search: String!, $page: Int, $limit: Int) {\n    searchPosts(search: $search, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": types.SearchPostsDocument,
+    "\n  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {\n    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": types.PostsByCategoryDocument,
     "\n  mutation CreateCategory($name: String!) {\n    createCategory(name: $name) {\n      code\n      success\n      message\n      category {\n        id\n        name\n      }\n    }\n  }\n": types.CreateCategoryDocument,
     "\n  mutation ToggleCommentLike($commentId: ID!) {\n    toggleCommentLike(commentId: $commentId) {\n      code\n      success\n      message\n    }\n  }\n": types.ToggleCommentLikeDocument,
     "\n  mutation ReplyToComment($commentId: ID!, $content: String!) {\n    replyToComment(commentId: $commentId, content: $content) {\n      code\n      success\n      message\n      comment {\n        id\n        content\n        createdAt\n        author {\n          name\n        }\n        parent {\n          id\n        }\n      }\n    }\n  }\n": types.ReplyToCommentDocument,
+    "\n  query Me {\n    me {\n      id\n      name\n      email\n    }\n  }\n": types.MeDocument,
+    "\n  query GetPopularPosts($page: Int, $limit: Int) {\n    popularPosts(page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        content\n        createdAt\n        likesCount\n        author {\n          id\n          name\n        }\n        category {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n": types.GetPopularPostsDocument,
 };
 
 /**
@@ -67,15 +69,7 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query Me {\n    me {\n      id\n      name\n      email\n    }\n  }\n"): (typeof documents)["\n  query Me {\n    me {\n      id\n      name\n      email\n    }\n  }\n"];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
 export function gql(source: "\n  mutation SignOut {\n    signOut {\n      success\n      message\n    }\n  }\n"): (typeof documents)["\n  mutation SignOut {\n    signOut {\n      success\n      message\n    }\n  }\n"];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(source: "\n  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {\n    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n"): (typeof documents)["\n  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {\n    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -119,6 +113,10 @@ export function gql(source: "\n  query SearchPosts($search: String!, $page: Int,
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function gql(source: "\n  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {\n    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n"): (typeof documents)["\n  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {\n    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        createdAt\n        likesCount\n        category {\n          name\n        }\n        author {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function gql(source: "\n  mutation CreateCategory($name: String!) {\n    createCategory(name: $name) {\n      code\n      success\n      message\n      category {\n        id\n        name\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation CreateCategory($name: String!) {\n    createCategory(name: $name) {\n      code\n      success\n      message\n      category {\n        id\n        name\n      }\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -128,6 +126,14 @@ export function gql(source: "\n  mutation ToggleCommentLike($commentId: ID!) {\n
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  mutation ReplyToComment($commentId: ID!, $content: String!) {\n    replyToComment(commentId: $commentId, content: $content) {\n      code\n      success\n      message\n      comment {\n        id\n        content\n        createdAt\n        author {\n          name\n        }\n        parent {\n          id\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation ReplyToComment($commentId: ID!, $content: String!) {\n    replyToComment(commentId: $commentId, content: $content) {\n      code\n      success\n      message\n      comment {\n        id\n        content\n        createdAt\n        author {\n          name\n        }\n        parent {\n          id\n        }\n      }\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  query Me {\n    me {\n      id\n      name\n      email\n    }\n  }\n"): (typeof documents)["\n  query Me {\n    me {\n      id\n      name\n      email\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  query GetPopularPosts($page: Int, $limit: Int) {\n    popularPosts(page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        content\n        createdAt\n        likesCount\n        author {\n          id\n          name\n        }\n        category {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n"): (typeof documents)["\n  query GetPopularPosts($page: Int, $limit: Int) {\n    popularPosts(page: $page, limit: $limit) {\n      posts {\n        id\n        title\n        content\n        createdAt\n        likesCount\n        author {\n          id\n          name\n        }\n        category {\n          id\n          name\n        }\n      }\n      totalCount\n    }\n  }\n"];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};

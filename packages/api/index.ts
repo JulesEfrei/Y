@@ -7,7 +7,7 @@ import { json } from "body-parser";
 import { PrismaClient } from "@prisma/client";
 import { readFileSync } from "fs";
 import { verifyToken } from "./src/utils/auth";
-import { resolvers } from "./src/resolvers";
+import { resolvers } from "./src/modules";
 import type { Context } from "./src/types/context";
 import type { JwtPayload } from "jsonwebtoken";
 
@@ -15,7 +15,6 @@ const typeDefs = readFileSync("./src/schema.graphql", "utf-8");
 const prisma = new PrismaClient();
 
 async function startServer() {
-  // Arrêter tout serveur existant potentiellement sur le port 4000
   try {
     const app = express();
     const httpServer = http.createServer(app);
@@ -27,19 +26,16 @@ async function startServer() {
 
     await server.start();
 
-    // CORS simplifié avec une assertion de type pour éviter l'erreur TypeScript
     app.use(
       "/graphql",
-      // @ts-ignore - Ignorer l'erreur de type pour cors
       cors({
         origin: ["http://localhost:3000"],
         credentials: true,
       }),
       json(),
-      // @ts-ignore - Ignorer l'erreur de type pour expressMiddleware
+      //@ts-ignore
       expressMiddleware(server, {
         context: async ({ req, res }) => {
-          // Extraire le token du cookie
           let token: string | undefined;
 
           if (req.headers.cookie) {
@@ -54,7 +50,6 @@ async function startServer() {
             token = cookies.auth_token;
           }
 
-          // Vérifier le token d'Authorization si pas de cookie
           if (!token && req.headers.authorization) {
             const authHeader = req.headers.authorization;
             if (authHeader.startsWith("Bearer ")) {
@@ -62,7 +57,6 @@ async function startServer() {
             }
           }
 
-          // Vérifier le token
           let user: (JwtPayload & { id: string }) | undefined = undefined;
 
           if (token) {
@@ -71,9 +65,7 @@ async function startServer() {
               if (decoded) {
                 user = decoded;
               }
-            } catch (e) {
-              // Token invalide, on garde user undefined
-            }
+            } catch (e) {}
           }
 
           return {
@@ -85,7 +77,6 @@ async function startServer() {
       })
     );
 
-    // Démarrage du serveur avec gestion d'erreur
     await new Promise<void>((resolve) => {
       httpServer.once("error", (err) => {
         console.error("Erreur lors du démarrage du serveur:", err);

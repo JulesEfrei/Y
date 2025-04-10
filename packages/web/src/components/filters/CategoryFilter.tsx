@@ -23,7 +23,7 @@ export function CategoryFilter({
   onChange,
 }: CategoryFilterProps) {
   return (
-    <div className="w-full max-w-xs" suppressHydrationWarning={true}>
+    <div className="max-w-xs">
       <Select
         value={selectedCategory || "all"}
         onValueChange={(value) => onChange(value === "all" ? null : value)}
