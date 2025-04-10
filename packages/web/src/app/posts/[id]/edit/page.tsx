@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
-import BackButton from "@/components/BackButton";
+import BackButton from "@/components/button/BackButton";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 

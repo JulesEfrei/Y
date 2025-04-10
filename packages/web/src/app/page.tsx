@@ -39,7 +39,6 @@ export default async function Home({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Updated Hero section */}
       <div className="bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-950 dark:via-purple-950 dark:to-indigo-950 py-24 px-4 relative overflow-hidden">
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
@@ -103,9 +102,16 @@ export default async function Home({
                   </p>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
-                  <div className="flex items-center gap-1">
-                    <Heart size={16} className="text-red-500" />
-                    <span className="text-sm">{post.likesCount}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Heart size={16} className="text-red-500" />
+                      <span className="text-sm">{post.likesCount}</span>
+                    </div>
+                    {post.category && (
+                      <span className="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full dark:bg-indigo-900 dark:text-indigo-200">
+                        {post.category.name}
+                      </span>
+                    )}
                   </div>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href={`/posts/${post.id}`}>Read more</Link>

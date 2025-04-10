@@ -8,6 +8,9 @@ export const GET_POSTS = gql(`
       title
       createdAt
       likesCount
+      category {
+        name
+      }
       author {
         id
         name
@@ -25,6 +28,9 @@ export const GET_POST = gql(`
       content
       createdAt
       likesCount
+      category {
+        name
+      }
       author {
         id
         name

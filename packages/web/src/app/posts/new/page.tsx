@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useMutation } from "@apollo/client";
-import BackButton from "@/components/BackButton";
+import BackButton from "@/components/button/BackButton";
 import { CREATE_POST } from "@/lib/queries";
 
 export default function NewPostPage() {

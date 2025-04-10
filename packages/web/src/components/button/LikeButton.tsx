@@ -4,7 +4,7 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LoginModal from "./LoginModal";
+import LoginModal from "@/components/modal/LoginModal";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useMutation } from "@apollo/client";

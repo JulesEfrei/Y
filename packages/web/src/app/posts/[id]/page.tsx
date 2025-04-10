@@ -1,20 +1,17 @@
 import { format } from "date-fns";
 import { notFound } from "next/navigation";
-import { User, MessageSquare, Edit } from "lucide-react";
+import { User, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import CopyButton from "@/components/CopyButton";
-import CommentForm from "@/components/CommentForm";
-import LikeButton from "@/components/LikeButton";
-import BackButton from "@/components/BackButton";
-import { useAuth } from "@/context/AuthContext";
+import CopyButton from "@/components/button/CopyButton";
+import CommentForm from "@/components/form/CommentForm";
+import LikeButton from "@/components/button/LikeButton";
+import BackButton from "@/components/button/BackButton";
 import createApolloClient from "../../../../apollo-client";
 import { GET_POST } from "@/lib/queries";
 
 // Add this client component to handle the edit button
-import EditPostButton from "@/components/EditPostButton";
+import EditPostButton from "@/components/button/EditPostButton";
 
 export default async function PostPage({
   params,

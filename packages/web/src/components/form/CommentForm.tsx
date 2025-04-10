@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/AuthContext";
-import LoginModal from "./LoginModal";
+import LoginModal from "@/components/modal/LoginModal";
 import { toast } from "sonner";
 import { useMutation } from "@apollo/client";
 import { COMMENT_POST } from "@/lib/queries";
