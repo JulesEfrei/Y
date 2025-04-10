@@ -8,54 +8,27 @@ import {
   ErrorCode,
 } from "../utils/errorHandler";
 
-const formatDates = (obj: any) => {
-  if (!obj) return obj;
-
-  const formatted = { ...obj };
-
-  if (formatted.createdAt instanceof Date) {
-    formatted.createdAt = formatted.createdAt.toISOString();
-  }
-  if (formatted.updatedAt instanceof Date) {
-    formatted.updatedAt = formatted.updatedAt.toISOString();
-  }
-
-  return formatted;
-};
-
-const formatPrismaResults = (results: any | any[]) => {
-  if (Array.isArray(results)) {
-    return results.map(formatDates);
-  }
-  return formatDates(results);
-};
-
 export const resolvers: Resolvers = {
   Query: {
     me: async (_, __, context) => {
       assertAuthenticated(context);
-      const user = await context.prisma.user.findUnique({
+      return await context.prisma.user.findUnique({
         where: { id: context.user.id },
       });
-      return formatDates(user);
     },
     users: async (_, __, { prisma }) => {
-      const users = await prisma.user.findMany();
-      return formatPrismaResults(users);
+      return await prisma.user.findMany();
     },
     user: async (_, { id }, { prisma }) => {
-      const user = await prisma.user.findUnique({ where: { id } });
-      return formatDates(user);
+      return await prisma.user.findUnique({ where: { id } });
     },
     categories: async (_, __, { prisma }) => {
-      const categories = await prisma.category.findMany({
+      return await prisma.category.findMany({
         orderBy: { name: "asc" },
       });
-      return formatPrismaResults(categories);
     },
     category: async (_, { id }, { prisma }) => {
-      const category = await prisma.category.findUnique({ where: { id } });
-      return formatDates(category);
+      return await prisma.category.findUnique({ where: { id } });
     },
     posts: async (_, { page = 1, limit = 20, offset = 0 }, { prisma }) => {
       const skip = (page - 1) * limit + offset;
@@ -64,7 +37,12 @@ export const resolvers: Resolvers = {
         skip: skip,
         orderBy: { createdAt: "desc" },
       });
-      return formatPrismaResults(posts);
+      const totalCount = await prisma.post.count();
+
+      return {
+        posts,
+        totalCount,
+      };
     },
     searchPosts: async (
       _,
@@ -94,7 +72,7 @@ export const resolvers: Resolvers = {
         }),
       ]);
       return {
-        posts: formatPrismaResults(posts),
+        posts,
         totalCount,
       };
     },
@@ -104,31 +82,27 @@ export const resolvers: Resolvers = {
       { prisma }
     ) => {
       const skip = (page - 1) * limit + offset;
-      const posts = await prisma.post.findMany({
+      return await prisma.post.findMany({
         where: { categoryId },
         take: limit,
         skip: skip,
         orderBy: { createdAt: "desc" },
       });
-      return formatPrismaResults(posts);
     },
     post: async (_, { id }, { prisma }) => {
-      const post = await prisma.post.findUnique({ where: { id } });
-      return formatDates(post);
+      return await prisma.post.findUnique({ where: { id } });
     },
     postComments: async (_, { postId }, { prisma }) => {
-      const comments = await prisma.comment.findMany({
+      return await prisma.comment.findMany({
         where: { postId, parentId: null },
         orderBy: { createdAt: "desc" },
       });
-      return formatPrismaResults(comments);
     },
     commentReplies: async (_, { commentId }, { prisma }) => {
-      const replies = await prisma.comment.findMany({
+      return await prisma.comment.findMany({
         where: { parentId: commentId },
         orderBy: { createdAt: "asc" },
       });
-      return formatPrismaResults(replies);
     },
   },
 
@@ -141,7 +115,7 @@ export const resolvers: Resolvers = {
         });
         const token = generateToken(user.id);
         return createSuccessResponse(
-          { token, user: formatDates(user) },
+          { token, user },
           "User created successfully"
         );
       } catch (error) {
@@ -168,10 +142,7 @@ export const resolvers: Resolvers = {
         }
 
         const token = generateToken(user.id);
-        return createSuccessResponse(
-          { token, user: formatDates(user) },
-          "Login successful"
-        );
+        return createSuccessResponse({ token, user }, "Login successful");
       } catch (error) {
         return handlePrismaError(error);
       }
@@ -187,7 +158,7 @@ export const resolvers: Resolvers = {
 
         if (existingCategory) {
           return createSuccessResponse(
-            { category: formatDates(existingCategory) },
+            { category: existingCategory },
             "Category already exists"
           );
         }
@@ -197,7 +168,7 @@ export const resolvers: Resolvers = {
         });
 
         return createSuccessResponse(
-          { category: formatDates(category) },
+          { category },
           "Category created successfully"
         );
       } catch (error) {
@@ -229,7 +200,7 @@ export const resolvers: Resolvers = {
         });
 
         return createSuccessResponse(
-          { category: formatDates(updatedCategory) },
+          { category: updatedCategory },
           "Category updated successfully"
         );
       } catch (error) {
@@ -265,7 +236,7 @@ export const resolvers: Resolvers = {
         });
 
         return createSuccessResponse(
-          { category: formatDates(deletedCategory) },
+          { category: deletedCategory },
           "Category deleted successfully"
         );
       } catch (error) {
@@ -308,15 +279,7 @@ export const resolvers: Resolvers = {
           include: { category: true },
         });
 
-        const formattedPost = formatDates(post);
-        if (post.category) {
-          formattedPost.category = formatDates(post.category);
-        }
-
-        return createSuccessResponse(
-          { post: formattedPost },
-          "Post created successfully"
-        );
+        return createSuccessResponse({ post }, "Post created successfully");
       } catch (error) {
         if (error instanceof Error && error.message === "Not authenticated") {
           return createErrorResponse(
@@ -371,13 +334,8 @@ export const resolvers: Resolvers = {
           include: { category: true },
         });
 
-        const formattedPost = formatDates(updatedPost);
-        if (updatedPost.category) {
-          formattedPost.category = formatDates(updatedPost.category);
-        }
-
         return createSuccessResponse(
-          { post: formattedPost },
+          { post: updatedPost },
           "Post updated successfully"
         );
       } catch (error) {
@@ -398,7 +356,7 @@ export const resolvers: Resolvers = {
           data: { content, postId, authorId: context.user.id },
         });
         return createSuccessResponse(
-          { comment: formatDates(comment) },
+          { comment },
           "Comment created successfully"
         );
       } catch (error) {
@@ -436,10 +394,7 @@ export const resolvers: Resolvers = {
           },
         });
 
-        return createSuccessResponse(
-          { comment: formatDates(comment) },
-          "Reply added successfully"
-        );
+        return createSuccessResponse({ comment }, "Reply added successfully");
       } catch (error) {
         if (error instanceof Error && error.message === "Not authenticated") {
           return createErrorResponse(
@@ -472,7 +427,7 @@ export const resolvers: Resolvers = {
           data: { content },
         });
         return createSuccessResponse(
-          { comment: formatDates(updatedComment) },
+          { comment: updatedComment },
           "Comment updated successfully"
         );
       } catch (error) {
@@ -506,7 +461,7 @@ export const resolvers: Resolvers = {
           where: { id },
         });
         return createSuccessResponse(
-          { comment: formatDates(deletedComment) },
+          { comment: deletedComment },
           "Comment deleted successfully"
         );
       } catch (error) {
@@ -540,10 +495,7 @@ export const resolvers: Resolvers = {
         const like = await context.prisma.like.create({
           data: { userId: context.user.id, postId },
         });
-        return createSuccessResponse(
-          { like: formatDates(like) },
-          "Post liked successfully"
-        );
+        return createSuccessResponse({ like }, "Post liked successfully");
       } catch (error) {
         if (error instanceof Error && error.message === "Not authenticated") {
           return createErrorResponse(
@@ -599,7 +551,7 @@ export const resolvers: Resolvers = {
           ]);
 
           return createSuccessResponse(
-            { commentLike: formatDates(newLike) },
+            { commentLike: newLike },
             "Comment liked successfully"
           );
         }
@@ -617,55 +569,46 @@ export const resolvers: Resolvers = {
 
   User: {
     posts: async ({ id }, _, { prisma }) => {
-      const posts = await prisma.post.findMany({ where: { authorId: id } });
-      return formatPrismaResults(posts);
+      return await prisma.post.findMany({ where: { authorId: id } });
     },
     comments: async ({ id }, _, { prisma }) => {
-      const comments = await prisma.comment.findMany({
+      return await prisma.comment.findMany({
         where: { authorId: id },
       });
-      return formatPrismaResults(comments);
     },
     likes: async ({ id }, _, { prisma }) => {
-      const likes = await prisma.like.findMany({ where: { userId: id } });
-      return formatPrismaResults(likes);
+      return await prisma.like.findMany({ where: { userId: id } });
     },
     commentLikes: async ({ id }, _, { prisma }) => {
-      const commentLikes = await prisma.commentLike.findMany({
+      return await prisma.commentLike.findMany({
         where: { userId: id },
       });
-      return formatPrismaResults(commentLikes);
     },
   },
 
   Category: {
     posts: async ({ id }, _, { prisma }) => {
-      const posts = await prisma.post.findMany({ where: { categoryId: id } });
-      return formatPrismaResults(posts);
+      return await prisma.post.findMany({ where: { categoryId: id } });
     },
   },
 
   Post: {
     author: async ({ authorId }, _, { prisma }) => {
-      const author = await prisma.user.findUniqueOrThrow({
+      return await prisma.user.findUniqueOrThrow({
         where: { id: authorId },
       });
-      return formatDates(author);
     },
     category: async ({ categoryId }, _, { prisma }) => {
       if (!categoryId) return null;
-      const category = await prisma.category.findUniqueOrThrow({
+      return await prisma.category.findUniqueOrThrow({
         where: { id: categoryId },
       });
-      return formatDates(category);
     },
     comments: async ({ id }, _, { prisma }) => {
-      const comments = await prisma.comment.findMany({ where: { postId: id } });
-      return formatPrismaResults(comments);
+      return await prisma.comment.findMany({ where: { postId: id } });
     },
     likes: async ({ id }, _, { prisma }) => {
-      const likes = await prisma.like.findMany({ where: { postId: id } });
-      return formatPrismaResults(likes);
+      return await prisma.like.findMany({ where: { postId: id } });
     },
     likesCount: ({ id }, _, { prisma }) =>
       prisma.like.count({ where: { postId: id } }),
@@ -673,52 +616,45 @@ export const resolvers: Resolvers = {
 
   Comment: {
     author: async ({ authorId }, _, { prisma }) => {
-      const author = await prisma.user.findUniqueOrThrow({
+      return await prisma.user.findUniqueOrThrow({
         where: { id: authorId },
       });
-      return formatDates(author);
     },
     post: async ({ postId }, _, { prisma }) => {
-      const post = await prisma.post.findUniqueOrThrow({
+      return await prisma.post.findUniqueOrThrow({
         where: { id: postId },
       });
-      return formatDates(post);
     },
     parent: async ({ parentId }, _, { prisma }) => {
       if (!parentId) return null;
-      const parent = await prisma.comment.findUniqueOrThrow({
+      return await prisma.comment.findUniqueOrThrow({
         where: { id: parentId },
       });
-      return formatDates(parent);
     },
     replies: async ({ id }, _, { prisma }) => {
-      const replies = await prisma.comment.findMany({
+      return await prisma.comment.findMany({
         where: { parentId: id },
         orderBy: { createdAt: "asc" },
       });
-      return formatPrismaResults(replies);
     },
     likes: async ({ id }, _, { prisma }) => {
-      const likes = await prisma.commentLike.findMany({
+      return await prisma.commentLike.findMany({
         where: { commentId: id },
       });
-      return formatPrismaResults(likes);
     },
     likesCount: ({ likesCount }, _, __) => likesCount,
   },
 
   Like: {
     user: async ({ userId }, _, { prisma }) => {
-      const user = await prisma.user.findUniqueOrThrow({
+      return await prisma.user.findUniqueOrThrow({
         where: { id: userId },
       });
-      return formatDates(user);
     },
     post: async ({ postId }, _, { prisma }) => {
-      const post = await prisma.post.findUniqueOrThrow({
+      return await prisma.post.findUniqueOrThrow({
         where: { id: postId },
       });
-      return formatDates(post);
     },
   },
 
@@ -729,10 +665,9 @@ export const resolvers: Resolvers = {
         throw new Error("User ID not found in CommentLike");
       }
 
-      const user = await prisma.user.findUniqueOrThrow({
+      return await prisma.user.findUniqueOrThrow({
         where: { id: userId },
       });
-      return formatDates(user);
     },
     comment: async (parent, _, { prisma }) => {
       const commentId =
@@ -741,10 +676,9 @@ export const resolvers: Resolvers = {
         throw new Error("Comment ID not found in CommentLike");
       }
 
-      const comment = await prisma.comment.findUniqueOrThrow({
+      return await prisma.comment.findUniqueOrThrow({
         where: { id: commentId },
       });
-      return formatDates(comment);
     },
   },
 };

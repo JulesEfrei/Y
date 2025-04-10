@@ -119,8 +119,7 @@ type CommentLikeResponse implements MutationResponse {
   commentLike: CommentLike
 }
 
-# Résultat de recherche paginé avec compte total
-type PostSearchResult {
+type PostsResult {
   posts: [Post!]!
   totalCount: Int!
 }
@@ -131,9 +130,19 @@ type Query {
   user(id: ID!): User
   categories: [Category!]!
   category(id: ID!): Category
-  posts(page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
-  searchPosts(search: String!, page: Int = 1, limit: Int = 20, offset: Int = 0): PostSearchResult!
-  postsByCategory(categoryId: ID!, page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
+  posts(page: Int = 1, limit: Int = 20, offset: Int = 0): PostsResult!
+  searchPosts(
+    search: String!
+    page: Int = 1
+    limit: Int = 20
+    offset: Int = 0
+  ): PostsResult!
+  postsByCategory(
+    categoryId: ID!
+    page: Int = 1
+    limit: Int = 20
+    offset: Int = 0
+  ): [Post!]!
   post(id: ID!): Post
   postComments(postId: ID!): [Comment!]!
   commentReplies(commentId: ID!): [Comment!]!
@@ -150,8 +159,17 @@ type Mutation {
   deleteCategory(id: ID!): CategoryResponse!
 
   # Posts
-  createPost(title: String!, content: String!, categoryName: String): PostResponse!
-  updatePost(id: ID!, title: String, content: String, categoryName: String): PostResponse!
+  createPost(
+    title: String!
+    content: String!
+    categoryName: String
+  ): PostResponse!
+  updatePost(
+    id: ID!
+    title: String
+    content: String
+    categoryName: String
+  ): PostResponse!
   deletePost(id: ID!): PostResponse!
 
   # Comments
