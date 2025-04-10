@@ -134,8 +134,8 @@ export const SIGN_UP = gql(`
 
 // GraphQL mutation for updating a post
 export const UPDATE_POST = gql(`
-  mutation UpdatePost($id: ID!, $title: String, $content: String) {
-    updatePost(id: $id, title: $title, content: $content) {
+  mutation UpdatePost($id: ID!, $title: String, $content: String, $categoryName: String) {
+    updatePost(id: $id, title: $title, content: $content, categoryName: $categoryName) {
       code
       success
       message
@@ -143,6 +143,10 @@ export const UPDATE_POST = gql(`
         id
         title
         content
+        category {
+          id
+          name
+        }
       }
     }
   }
@@ -192,6 +196,21 @@ export const POSTS_BY_CATEGORY = gql(`
         name
       }
       author {
+        id
+        name
+      }
+    }
+  }
+`);
+
+// GraphQL mutation for creating a category
+export const CREATE_CATEGORY = gql(`
+  mutation CreateCategory($name: String!) {
+    createCategory(name: $name) {
+      code
+      success
+      message
+      category {
         id
         name
       }

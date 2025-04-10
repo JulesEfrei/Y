@@ -3,7 +3,12 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, gql } from "@apollo/client";
-import { GET_POST, UPDATE_POST } from "@/lib/queries";
+import {
+  CREATE_CATEGORY,
+  GET_CATEGORIES,
+  GET_POST,
+  UPDATE_POST,
+} from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,50 +18,11 @@ import BackButton from "@/components/button/BackButton";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const GET_CATEGORIES = gql`
-  query Categories {
-    categories {
-      id
-      name
-    }
-  }
-`;
-
-const CREATE_CATEGORY = gql`
-  mutation CreateCategory($name: String!) {
-    createCategory(name: $name) {
-      code
-      success
-      message
-      category {
-        id
-        name
-      }
-    }
-  }
-`;
-
-// Remplacer UPDATE_POST importé par une version locale qui inclut categoryName
-const UPDATE_POST_MUTATION = gql`
-  mutation UpdatePost($id: ID!, $title: String, $content: String, $categoryName: String) {
-    updatePost(id: $id, title: $title, content: $content, categoryName: $categoryName) {
-      code
-      success
-      message
-      post {
-        id
-        title
-        content
-        category {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
-export default function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditPostPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const resolvedParams = use(params);
   const { id } = resolvedParams;
   const router = useRouter();
@@ -74,30 +40,37 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     fetchPolicy: "network-only",
   });
 
-  const { data: categoriesData, loading: loadingCategories, refetch } = useQuery(GET_CATEGORIES);
+  const {
+    data: categoriesData,
+    loading: loadingCategories,
+    refetch,
+  } = useQuery(GET_CATEGORIES);
 
-  const [createCategory, { loading: creatingCategory }] = useMutation(CREATE_CATEGORY, {
-    onCompleted: (data: any) => {
-      if (data.createCategory.success) {
-        toast.success("Category created successfully");
-        setCategoryName(data.createCategory.category.name);
-        setNewCategoryName("");
-        setShowNewCategoryInput(false);
-        refetch(); // Refresh categories list
-      } else {
+  const [createCategory, { loading: creatingCategory }] = useMutation(
+    CREATE_CATEGORY,
+    {
+      onCompleted: (data: any) => {
+        if (data.createCategory.success) {
+          toast.success("Category created successfully");
+          setCategoryName(data.createCategory.category.name);
+          setNewCategoryName("");
+          setShowNewCategoryInput(false);
+          refetch(); // Refresh categories list
+        } else {
+          toast.error("Error creating category", {
+            description: data.createCategory.message,
+          });
+        }
+      },
+      onError: (error: any) => {
         toast.error("Error creating category", {
-          description: data.createCategory.message
+          description: error.message,
         });
-      }
-    },
-    onError: (error: any) => {
-      toast.error("Error creating category", {
-        description: error.message
-      });
+      },
     }
-  });
+  );
 
-  const [updatePost] = useMutation(UPDATE_POST_MUTATION, {
+  const [updatePost] = useMutation(UPDATE_POST, {
     onCompleted: (data) => {
       setIsSubmitting(false);
       if (data.updatePost.success) {
@@ -151,15 +124,15 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
   const handleCreateCategory = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newCategoryName.trim()) {
       return;
     }
 
     createCategory({
       variables: {
-        name: newCategoryName.trim()
-      }
+        name: newCategoryName.trim(),
+      },
     });
   };
 
@@ -168,21 +141,26 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     if (!title.trim() || !content.trim()) return;
 
     setIsSubmitting(true);
-    const finalCategoryName = showNewCategoryInput ? newCategoryName : categoryName;
+    const finalCategoryName = showNewCategoryInput
+      ? newCategoryName
+      : categoryName;
 
     updatePost({
       variables: {
         id,
         title: title.trim(),
         content: content.trim(),
-        categoryName: finalCategoryName || undefined
+        categoryName: finalCategoryName || undefined,
       },
     });
   };
 
   if (loading) {
     return (
-      <div suppressHydrationWarning className="container max-w-4xl mx-auto py-8 px-4 flex justify-center">
+      <div
+        suppressHydrationWarning
+        className="container max-w-4xl mx-auto py-8 px-4 flex justify-center"
+      >
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -190,7 +168,10 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
   if (error) {
     return (
-      <div suppressHydrationWarning className="container max-w-4xl mx-auto py-8 px-4">
+      <div
+        suppressHydrationWarning
+        className="container max-w-4xl mx-auto py-8 px-4"
+      >
         <Card>
           <CardContent className="pt-6">
             <p className="text-red-500">Error loading post: {error.message}</p>
@@ -208,7 +189,10 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
   if (!data?.post) {
     return (
-      <div suppressHydrationWarning className="container max-w-4xl mx-auto py-8 px-4">
+      <div
+        suppressHydrationWarning
+        className="container max-w-4xl mx-auto py-8 px-4"
+      >
         <Card>
           <CardContent className="pt-6">
             <p>Post not found</p>
@@ -222,7 +206,10 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <div suppressHydrationWarning className="container max-w-4xl mx-auto py-8 px-4">
+    <div
+      suppressHydrationWarning
+      className="container max-w-4xl mx-auto py-8 px-4"
+    >
       <BackButton />
 
       <Card className="mt-4">
@@ -249,7 +236,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
               <label htmlFor="category" className="text-sm font-medium">
                 Category (optional)
               </label>
-              
+
               {!showNewCategoryInput ? (
                 <div className="flex gap-2">
                   <select
