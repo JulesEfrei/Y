@@ -4,12 +4,19 @@ import { formatDates, formatPrismaResults } from "../utils/formatters";
 export const postQueries: QueryResolvers = {
   posts: async (_, { page = 1, limit = 20, offset = 0 }, { prisma }) => {
     const skip = (page - 1) * limit + offset;
-    const posts = await prisma.post.findMany({
-      take: limit,
-      skip: skip,
-      orderBy: { createdAt: "desc" },
-    });
-    return formatPrismaResults(posts);
+    const [posts, totalCount] = await Promise.all([
+      prisma.post.findMany({
+        take: limit,
+        skip: skip,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.post.count(),
+    ]);
+    
+    return {
+      posts: formatPrismaResults(posts),
+      totalCount,
+    };
   },
 
   searchPosts: async (
@@ -52,13 +59,23 @@ export const postQueries: QueryResolvers = {
     { prisma }
   ) => {
     const skip = (page - 1) * limit + offset;
-    const posts = await prisma.post.findMany({
-      where: { categoryId },
-      take: limit,
-      skip: skip,
-      orderBy: { createdAt: "desc" },
-    });
-    return formatPrismaResults(posts);
+    
+    const [posts, totalCount] = await Promise.all([
+      prisma.post.findMany({
+        where: { categoryId },
+        take: limit,
+        skip: skip,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.post.count({
+        where: { categoryId },
+      }),
+    ]);
+    
+    return {
+      posts: formatPrismaResults(posts),
+      totalCount,
+    };
   },
 
   popularPosts: async (_, { page = 1, limit = 20, offset = 0 }, { prisma }) => {

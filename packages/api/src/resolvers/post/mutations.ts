@@ -40,7 +40,7 @@ export const postMutations: MutationResolvers = {
             // Si la catégorie n'existe pas, essayer de la créer avec gestion d'erreur
             try {
               category = await context.prisma.category.create({
-                data: { name: categoryName.trim() },
+                data: { name: normalizedCategoryName },
               });
             } catch (categoryError: any) {
               // Si l'erreur est due à une contrainte d'unicité, essayer de récupérer la catégorie une nouvelle fois

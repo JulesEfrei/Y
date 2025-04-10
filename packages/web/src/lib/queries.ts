@@ -4,17 +4,20 @@ import { gql } from "@/__generated__";
 export const GET_POSTS = gql(`
   query Posts($page: Int, $limit: Int) {
     posts(page: $page, limit: $limit) {
-      id
-      title
-      createdAt
-      likesCount
-      category {
-        name
-      }
-      author {
+      posts {
         id
-        name
+        title
+        createdAt
+        likesCount
+        category {
+          name
+        }
+        author {
+          id
+          name
+        }
       }
+      totalCount
     }
   }
 `);
@@ -131,8 +134,8 @@ export const SIGN_UP = gql(`
 
 // GraphQL mutation for updating a post
 export const UPDATE_POST = gql(`
-  mutation UpdatePost($id: ID!, $title: String, $content: String) {
-    updatePost(id: $id, title: $title, content: $content) {
+  mutation UpdatePost($id: ID!, $title: String, $content: String, $categoryName: String) {
+    updatePost(id: $id, title: $title, content: $content, categoryName: $categoryName) {
       code
       success
       message
@@ -140,17 +143,80 @@ export const UPDATE_POST = gql(`
         id
         title
         content
+        category {
+          id
+          name
+        }
       }
     }
   }
 `);
 
-// GraphQL query to get all categories
+// GraphQL query for getting all categories
 export const GET_CATEGORIES = gql(`
   query Categories {
     categories {
       id
       name
+    }
+  }
+`);
+
+// GraphQL query for searching posts
+export const SEARCH_POSTS = gql(`
+  query SearchPosts($search: String!, $page: Int, $limit: Int) {
+    searchPosts(search: $search, page: $page, limit: $limit) {
+      posts {
+        id
+        title
+        createdAt
+        likesCount
+        category {
+          name
+        }
+        author {
+          id
+          name
+        }
+      }
+      totalCount
+    }
+  }
+`);
+
+// GraphQL query for posts by category
+export const POSTS_BY_CATEGORY = gql(`
+  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {
+    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {
+      posts {
+        id
+        title
+        createdAt
+        likesCount
+        category {
+          name
+        }
+        author {
+          id
+          name
+        }
+      }
+      totalCount
+    }
+  }
+`);
+
+// GraphQL mutation for creating a category
+export const CREATE_CATEGORY = gql(`
+  mutation CreateCategory($name: String!) {
+    createCategory(name: $name) {
+      code
+      success
+      message
+      category {
+        id
+        name
+      }
     }
   }
 `);

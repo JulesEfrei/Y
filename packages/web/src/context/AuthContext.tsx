@@ -61,9 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data } = await client.query({
         query: ME_QUERY,
         fetchPolicy: "network-only",
+        errorPolicy: 'none', // Traitera les erreurs GraphQL comme des erreurs réseau
+        // Ajout d'options pour améliorer la stabilité des requêtes
+        context: {
+          fetchOptions: {
+            credentials: 'include', // S'assure que les cookies sont envoyés
+          },
+        },
       });
 
-      if (data.me) {
+      if (data && data.me) {
         setUser(data.me);
       } else {
         setUser(null);

@@ -9,9 +9,11 @@ const config: CodegenConfig = {
         contextType: "./context#Context",
         mappers: {
           User: "@prisma/client#User",
+          Category: "@prisma/client#Category",
           Post: "@prisma/client#Post",
           Comment: "@prisma/client#Comment",
           Like: "@prisma/client#Like",
+          CommentLike: "@prisma/client#CommentLike",
         },
       },
     },

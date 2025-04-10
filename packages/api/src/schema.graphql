@@ -79,6 +79,13 @@ type AuthResponse implements MutationResponse {
   user: User
 }
 
+# SignOut response
+type SignOutResponse implements MutationResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+}
+
 # Category mutation responses
 type CategoryResponse implements MutationResponse {
   code: Int!
@@ -119,8 +126,7 @@ type CommentLikeResponse implements MutationResponse {
   commentLike: CommentLike
 }
 
-# Résultat de recherche paginé avec compte total
-type PostSearchResult {
+type PostsResult {
   posts: [Post!]!
   totalCount: Int!
 }
@@ -131,10 +137,20 @@ type Query {
   user(id: ID!): User
   categories: [Category!]!
   category(id: ID!): Category
-  posts(page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
-  searchPosts(search: String!, page: Int = 1, limit: Int = 20, offset: Int = 0): PostSearchResult!
-  popularPosts(page: Int = 1, limit: Int = 20, offset: Int = 0): PostSearchResult!
-  postsByCategory(categoryId: ID!, page: Int = 1, limit: Int = 20, offset: Int = 0): [Post!]!
+  posts(page: Int = 1, limit: Int = 20, offset: Int = 0): PostsResult!
+  searchPosts(
+    search: String!
+    page: Int = 1
+    limit: Int = 20
+    offset: Int = 0
+  ): PostsResult!
+  popularPosts(page: Int = 1, limit: Int = 20, offset: Int = 0): PostsResult!
+  postsByCategory(
+    categoryId: ID!
+    page: Int = 1
+    limit: Int = 20
+    offset: Int = 0
+  ): PostsResult!
   post(id: ID!): Post
   postComments(postId: ID!): [Comment!]!
   commentReplies(commentId: ID!): [Comment!]!
@@ -144,7 +160,7 @@ type Mutation {
   # Auth
   signUp(email: String!, password: String!, name: String!): AuthResponse!
   signIn(email: String!, password: String!): AuthResponse!
-  signOut: MutationResponse!
+  signOut: SignOutResponse!
 
   # Categories
   createCategory(name: String!): CategoryResponse!
@@ -152,8 +168,17 @@ type Mutation {
   deleteCategory(id: ID!): CategoryResponse!
 
   # Posts
-  createPost(title: String!, content: String!, categoryName: String): PostResponse!
-  updatePost(id: ID!, title: String, content: String, categoryName: String): PostResponse!
+  createPost(
+    title: String!
+    content: String!
+    categoryName: String
+  ): PostResponse!
+  updatePost(
+    id: ID!
+    title: String
+    content: String
+    categoryName: String
+  ): PostResponse!
   deletePost(id: ID!): PostResponse!
 
   # Comments

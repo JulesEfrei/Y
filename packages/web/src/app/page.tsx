@@ -1,27 +1,27 @@
 import Link from "next/link";
-import { format } from "date-fns";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
 import createApolloClient from "../../apollo-client";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { GET_POSTS } from "@/lib/queries";
+import {
+  GET_POSTS,
+  GET_CATEGORIES,
+  SEARCH_POSTS,
+  POSTS_BY_CATEGORY,
+} from "@/lib/queries";
 import { gql } from "@apollo/client";
+import { PromptCard } from "@/components/card/PromptCard";
+import { Post } from "@/__generated__/graphql";
+import { SearchAndFilterContainer } from "@/components/search/SearchAndFilterContainer";
+import { SearchIndicator } from "@/components/search/SearchIndicator";
 
-// Requête pour obtenir l'utilisateur actuel
+// Query for current user
 const GET_CURRENT_USER = gql`
   query Me {
     me {
@@ -35,54 +35,122 @@ const GET_CURRENT_USER = gql`
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: { page?: string; search?: string; category?: string };
 }) {
-  const page = 1;
+  const page = Number((await searchParams).page) || 1;
+  const search = (await searchParams).search || "";
+  const categoryId = (await searchParams).category || "";
   const limit = 20;
 
   const client = createApolloClient();
-  
-  // Récupérer les posts et l'utilisateur connecté en parallèle
-  const [postsResponse, currentUserResponse] = await Promise.all([
-    client.query({
+
+  // Fetch categories for the filter
+  const { data: categoriesData } = await client.query({
+    query: GET_CATEGORIES,
+  });
+
+  const categories = categoriesData?.categories || [];
+
+  // Récupérer l'utilisateur connecté
+  const { data: currentUserResponse } = await client
+    .query({
+      query: GET_CURRENT_USER,
+      errorPolicy: "ignore", // Ignorer les erreurs d'authentification
+    })
+    .catch(() => {
+      // En cas d'erreur (non authentifié), on retourne un objet avec data: null
+      return { data: null };
+    });
+
+  const currentUser = currentUserResponse?.me || null;
+
+  // Ajouter un log côté serveur pour debug (visible uniquement dans les logs serveur)
+  console.log("Page - Current User:", currentUser);
+
+  // Fetch posts based on search/filter criteria
+  let postsData;
+  let totalCount = 0;
+
+  if (search) {
+    const { data } = await client.query({
+      query: SEARCH_POSTS,
+      variables: { search, page, limit },
+    });
+    postsData = data?.searchPosts.posts || [];
+    totalCount = data?.searchPosts.totalCount || 0;
+  } else if (categoryId) {
+    try {
+      // Vérifier si l'ID de catégorie est valide (doit être un UUID complet)
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          categoryId
+        )
+      ) {
+        console.error("ID de catégorie invalide:", categoryId);
+        // Si l'ID est invalide, afficher simplement tous les posts au lieu de planter
+        const { data } = await client.query({
+          query: GET_POSTS,
+          variables: { page, limit },
+        });
+        postsData = data?.posts.posts || [];
+        totalCount = data?.posts.totalCount || 0;
+      } else {
+        const { data } = await client.query({
+          query: POSTS_BY_CATEGORY as any,
+          variables: { categoryId, page, limit },
+        });
+        postsData = data?.postsByCategory.posts || [];
+        totalCount = data?.postsByCategory.totalCount || 0;
+      }
+    } catch (error) {
+      console.error(
+        "Erreur lors de la récupération des posts par catégorie:",
+        error
+      );
+      // En cas d'erreur, afficher tous les posts
+      const { data } = await client.query({
+        query: GET_POSTS,
+        variables: { page, limit },
+      });
+      postsData = data?.posts.posts || [];
+      totalCount = data?.posts.totalCount || 0;
+    }
+  } else {
+    const { data } = await client.query({
       query: GET_POSTS,
       variables: { page, limit },
-    }),
-    client.query({
-      query: GET_CURRENT_USER,
-    }).catch(error => {
-      console.error("Error fetching current user:", error);
-      return { data: { me: null } };
-    })
-  ]);
+    });
+    postsData = data?.posts.posts || [];
+    totalCount = data?.posts.totalCount || 0;
+  }
 
-  const posts = postsResponse.data?.posts || [];
-  const currentUser = currentUserResponse.data?.me || null;
-  const hasNextPage = posts.length === limit;
+  const posts = postsData;
+  const hasNextPage = totalCount > page * limit;
 
   return (
     <div
-      suppressHydrationWarning
       className="min-h-screen bg-gray-50 dark:bg-gray-900"
+      suppressHydrationWarning={true}
     >
+      {/* Hero section remains unchanged */}
       <div
-        suppressHydrationWarning
         className="bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-950 dark:via-purple-950 dark:to-indigo-950 py-24 px-4 relative overflow-hidden"
+        suppressHydrationWarning={true}
       >
         <div
-          suppressHydrationWarning
           className="container mx-auto max-w-6xl relative z-10"
+          suppressHydrationWarning={true}
         >
           <div
-            suppressHydrationWarning
             className="flex flex-col items-center text-center max-w-3xl mx-auto"
+            suppressHydrationWarning={true}
           >
             <div
-              suppressHydrationWarning
               className="bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-full mb-6 flex items-center gap-2"
+              suppressHydrationWarning={true}
             >
               <span className="inline-block">New</span>
-              <span>We've just released a new feature →</span>
+              <span>We've just released Y →</span>
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-indigo-900 via-purple-600 to-pink-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-purple-300 dark:to-pink-300">
@@ -91,150 +159,138 @@ export default async function Home({
             </h1>
 
             <p className="text-gray-600 dark:text-gray-300 text-lg mb-8 max-w-2xl">
-              We're here to simplify the intricacies of your life, providing a
-              user-friendly platform that not only manages your tasks
-              effortlessly but also enhances your overall efficiency.
+              Y is a prompt library to boost productivity and use best prompt
+              the community has to offer. Start using Y today and see the
+              difference it can make. Share your own prompts or browse through
+              the community's collection.
             </p>
 
             <div
-              suppressHydrationWarning
               className="flex flex-col sm:flex-row gap-4"
+              suppressHydrationWarning={true}
             >
-              <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700">
-                Get Started
-              </Button>
               <Button
                 size="lg"
-                variant="outline"
-                className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-950"
+                className="bg-indigo-600 hover:bg-indigo-700"
+                asChild
               >
-                Preview Platform
+                <Link href="/auth/register">Get Started</Link>
               </Button>
             </div>
           </div>
         </div>
 
         <div
-          suppressHydrationWarning
-          className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"
-        ></div>
-        <div
-          suppressHydrationWarning
-          className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"
-        ></div>
-        <div
-          suppressHydrationWarning
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"
+          className="absolute inset-0 w-full h-full"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(255,255,255,0) 0%, rgba(0,0,0,0.1) 100%)",
+          }}
+          suppressHydrationWarning={true}
         ></div>
       </div>
 
       <div
-        suppressHydrationWarning
         className="container mx-auto max-w-6xl px-4 py-12"
+        suppressHydrationWarning={true}
       >
-        <h2 className="text-3xl font-bold mb-8">Latest Posts</h2>
+        <h2 className="text-3xl font-bold mb-8">Latest Prompts</h2>
+
+        <div className="mb-8" suppressHydrationWarning={true}>
+          <SearchAndFilterContainer categories={categories} />
+          <SearchIndicator />
+        </div>
 
         <div
-          suppressHydrationWarning
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          suppressHydrationWarning={true}
         >
           {posts.length === 0 ? (
-            <div
-              suppressHydrationWarning
-              className="col-span-full text-center py-8"
-            >
-              <p className="text-gray-500">No posts yet. Be the first</p>
+            <div className="col-span-full text-center py-8">
+              <p className="text-gray-500">
+                {search || categoryId
+                  ? "No prompts found matching your criteria"
+                  : "No posts yet. Be the first"}
+              </p>
             </div>
           ) : (
-            posts.map((post) => {
-              // Vérifier si le post a été créé par l'utilisateur connecté
-              const isUserPost = currentUser && post.author.id === currentUser.id;
-              
-              return (
-                <Card
-                  key={post.id}
-                  className="overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-xl">{post.title}</CardTitle>
-                      {isUserPost && (
-                        <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                          MON POST
-                        </div>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      By {post.author.name} •{" "}
-                      {format(new Date(parseInt(post.createdAt)), "MMM dd, yyyy")}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between items-center">
-                    <div
-                      suppressHydrationWarning
-                      className="flex items-center gap-2"
-                    >
-                      <div
-                        suppressHydrationWarning
-                        className="flex items-center gap-1"
-                      >
-                        <Heart size={16} className="text-red-500" />
-                        <span className="text-sm">{post.likesCount}</span>
-                      </div>
-                      {post.category && (
-                        <span className="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full dark:bg-indigo-900 dark:text-indigo-200">
-                          {post.category.name}
-                        </span>
-                      )}
-                    </div>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/posts/${post.id}`}>Read more</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              );
+            posts.map((post: any) => {
+              return <PromptCard key={post.id} post={post as Post} />;
             })
           )}
         </div>
 
-        <div suppressHydrationWarning className="mt-10">
+        <div className="mt-12" suppressHydrationWarning={true}>
           <Pagination>
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  href={page > 1 ? `/?page=${page - 1}` : undefined}
-                  aria-disabled={page <= 1}
+                  href={`/?page=${Math.max(1, page - 1)}${
+                    search ? `&search=${search}` : ""
+                  }${categoryId ? `&category=${categoryId}` : ""}`}
+                  className={page <= 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
 
+              {page > 2 && (
+                <PaginationItem>
+                  <Link
+                    href={`/?page=1${search ? `&search=${search}` : ""}${
+                      categoryId ? `&category=${categoryId}` : ""
+                    }`}
+                    className="px-4 py-2 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    1
+                  </Link>
+                </PaginationItem>
+              )}
+
+              {page > 3 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+
               {page > 1 && (
                 <PaginationItem>
-                  <PaginationLink href={`/?page=${page - 1}`}>
+                  <Link
+                    href={`/?page=${page - 1}${
+                      search ? `&search=${search}` : ""
+                    }${categoryId ? `&category=${categoryId}` : ""}`}
+                    className="px-4 py-2 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
                     {page - 1}
-                  </PaginationLink>
+                  </Link>
                 </PaginationItem>
               )}
 
               <PaginationItem>
-                <PaginationLink href={`/?page=${page}`} isActive>
+                <span className="px-4 py-2 border bg-indigo-100 text-indigo-700 font-medium rounded-md dark:bg-indigo-900 dark:text-indigo-300">
                   {page}
-                </PaginationLink>
+                </span>
               </PaginationItem>
 
               {hasNextPage && (
                 <PaginationItem>
-                  <PaginationLink href={`/?page=${page + 1}`}>
+                  <Link
+                    href={`/?page=${page + 1}${
+                      search ? `&search=${search}` : ""
+                    }${categoryId ? `&category=${categoryId}` : ""}`}
+                    className="px-4 py-2 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
                     {page + 1}
-                  </PaginationLink>
+                  </Link>
                 </PaginationItem>
               )}
 
               <PaginationItem>
                 <PaginationNext
-                  href={hasNextPage ? `/?page=${page + 1}` : undefined}
-                  aria-disabled={!hasNextPage}
+                  href={`/?page=${page + 1}${
+                    search ? `&search=${search}` : ""
+                  }${categoryId ? `&category=${categoryId}` : ""}`}
+                  className={
+                    !hasNextPage ? "pointer-events-none opacity-50" : ""
+                  }
                 />
               </PaginationItem>
             </PaginationContent>

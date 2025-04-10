@@ -1,81 +1,81 @@
 datasource db {
-    provider = "sqlite"
-    url      = "file:./dev.db"
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 model User {
-    id           String        @id @default(uuid())
-    email        String        @unique
-    password     String
-    name         String
-    createdAt    DateTime      @default(now())
-    updatedAt    DateTime      @updatedAt
-    posts        Post[]        @relation("UserPosts")
-    comments     Comment[]     @relation("UserComments")
-    likes        Like[]        @relation("UserLikes")
-    commentLikes CommentLike[] @relation("UserCommentLikes")
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  posts        Post[]        @relation("UserPosts")
+  comments     Comment[]     @relation("UserComments")
+  likes        Like[]        @relation("UserLikes")
+  commentLikes CommentLike[] @relation("UserCommentLikes")
 }
 
 model Category {
-    id        String   @id @default(uuid())
-    name      String   @unique
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    posts     Post[]   @relation("CategoryPosts")
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]   @relation("CategoryPosts")
 }
 
 model Post {
-    id         String    @id @default(uuid())
-    title      String
-    content    String
-    createdAt  DateTime  @default(now())
-    updatedAt  DateTime  @updatedAt
-    author     User      @relation("UserPosts", fields: [authorId], references: [id])
-    authorId   String
-    category   Category? @relation("CategoryPosts", fields: [categoryId], references: [id])
-    categoryId String?
-    comments   Comment[] @relation("PostComments")
-    likes      Like[]    @relation("PostLikes")
+  id         String    @id @default(uuid())
+  title      String
+  content    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  author     User      @relation("UserPosts", fields: [authorId], references: [id])
+  authorId   String
+  category   Category? @relation("CategoryPosts", fields: [categoryId], references: [id])
+  categoryId String?
+  comments   Comment[] @relation("PostComments")
+  likes      Like[]    @relation("PostLikes")
 }
 
 model Comment {
-    id           String        @id @default(uuid())
-    content      String
-    createdAt    DateTime      @default(now())
-    updatedAt    DateTime      @updatedAt
-    author       User          @relation("UserComments", fields: [authorId], references: [id])
-    authorId     String
-    post         Post          @relation("PostComments", fields: [postId], references: [id])
-    postId       String
-    parentId     String?
-    parent       Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
-    replies      Comment[]     @relation("CommentReplies")
-    likes        CommentLike[] @relation("CommentLikes")
-    likesCount   Int           @default(0)
+  id         String        @id @default(uuid())
+  content    String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  author     User          @relation("UserComments", fields: [authorId], references: [id])
+  authorId   String
+  post       Post          @relation("PostComments", fields: [postId], references: [id])
+  postId     String
+  parentId   String?
+  parent     Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies    Comment[]     @relation("CommentReplies")
+  likes      CommentLike[] @relation("CommentLikes")
+  likesCount Int           @default(0)
 }
 
 model Like {
-    id        String   @id @default(uuid())
-    createdAt DateTime @default(now())
-    user      User     @relation("UserLikes", fields: [userId], references: [id])
-    userId    String
-    post      Post     @relation("PostLikes", fields: [postId], references: [id])
-    postId    String
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  user      User     @relation("UserLikes", fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation("PostLikes", fields: [postId], references: [id])
+  postId    String
 
-    @@unique([userId, postId])
+  @@unique([userId, postId])
 }
 
 model CommentLike {
-    id        String   @id @default(uuid())
-    createdAt DateTime @default(now())
-    user      User     @relation("UserCommentLikes", fields: [userId], references: [id])
-    userId    String
-    comment   Comment  @relation("CommentLikes", fields: [commentId], references: [id])
-    commentId String
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  user      User     @relation("UserCommentLikes", fields: [userId], references: [id])
+  userId    String
+  comment   Comment  @relation("CommentLikes", fields: [commentId], references: [id])
+  commentId String
 
-    @@unique([userId, commentId])
+  @@unique([userId, commentId])
 }
