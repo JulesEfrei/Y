@@ -10,50 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useMutation, useQuery, gql } from "@apollo/client";
 import BackButton from "@/components/button/BackButton";
-
-const GET_CATEGORIES = gql`
-  query Categories {
-    categories {
-      id
-      name
-    }
-  }
-`;
-
-const CREATE_CATEGORY = gql`
-  mutation CreateCategory($name: String!) {
-    createCategory(name: $name) {
-      code
-      success
-      message
-      category {
-        id
-        name
-      }
-    }
-  }
-`;
-
-const CREATE_POST = gql`
-  mutation CreatePost(
-    $title: String!
-    $content: String!
-    $categoryName: String
-  ) {
-    createPost(title: $title, content: $content, categoryName: $categoryName) {
-      code
-      success
-      message
-      post {
-        id
-        title
-        category {
-          name
-        }
-      }
-    }
-  }
-`;
+import { CREATE_CATEGORY, CREATE_POST, GET_CATEGORIES } from "@/lib/queries";
 
 export default function NewPostPage() {
   const router = useRouter();
