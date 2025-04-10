@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { notFound } from "next/navigation";
-import { User, MessageSquare } from "lucide-react";
+import { User, MessageSquare, Tag } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import CopyButton from "@/components/button/CopyButton";
@@ -11,6 +11,8 @@ import createApolloClient from "../../../../apollo-client";
 import { GET_POST } from "@/lib/queries";
 
 import EditPostButton from "@/components/button/EditPostButton";
+import CommentLikeButton from "@/components/button/CommentLikeButton";
+import CommentWithReplies from "@/components/comment/CommentWithReplies";
 
 export default async function PostPage({
   params,
@@ -47,6 +49,11 @@ export default async function PostPage({
             <div className="flex items-center gap-2">
               <User size={16} />
               <span>{post.author.name}</span>
+              {post.category && (
+                <span className="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full dark:bg-indigo-900 dark:text-indigo-200">
+                  {post.category.name}
+                </span>
+              )}
             </div>
             <div suppressHydrationWarning>
               {format(new Date(parseInt(post.createdAt)), "MMM dd, yyyy")}
@@ -92,27 +99,16 @@ export default async function PostPage({
                 No comments yet. Be the first to comment!
               </p>
             ) : (
-              post.comments?.map((comment) => (
-                <Card key={comment.id}>
-                  <CardHeader className="p-4 pb-2">
-                    <div className="flex justify-between items-center">
-                      <div className="font-medium flex items-center gap-2">
-                        <User size={14} />
-                        {comment.author.name}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {format(
-                          new Date(parseInt(comment.createdAt)),
-                          "MMM dd, yyyy"
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-2">
-                    <p className="text-sm">{comment.content}</p>
-                  </CardContent>
-                </Card>
-              ))
+              // Filter to only show top-level comments (those without a parent)
+              post.comments
+                ?.filter((comment) => !comment.parent)
+                .map((comment) => (
+                  <CommentWithReplies
+                    key={comment.id}
+                    comment={comment}
+                    postId={post.id}
+                  />
+                ))
             )}
           </div>
         </div>

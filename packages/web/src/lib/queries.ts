@@ -47,8 +47,31 @@ export const GET_POST = gql(`
         id
         content
         createdAt
+        likesCount
         author {
           name
+        }
+        likes {
+          user {
+            id
+          }
+        }
+        parent {
+          id
+        }
+        replies {
+          id
+          content
+          createdAt
+          likesCount
+          author {
+            name
+          }
+          likes {
+            user {
+              id
+            }
+          }
         }
       }
     }
@@ -216,6 +239,39 @@ export const CREATE_CATEGORY = gql(`
       category {
         id
         name
+      }
+    }
+  }
+`);
+
+// GraphQL mutation for toggling comment like
+export const TOGGLE_COMMENT_LIKE = gql(`
+  mutation ToggleCommentLike($commentId: ID!) {
+    toggleCommentLike(commentId: $commentId) {
+      code
+      success
+      message
+    }
+  }
+`);
+
+// GraphQL mutation for replying to a comment
+export const REPLY_TO_COMMENT = gql(`
+  mutation ReplyToComment($commentId: ID!, $content: String!) {
+    replyToComment(commentId: $commentId, content: $content) {
+      code
+      success
+      message
+      comment {
+        id
+        content
+        createdAt
+        author {
+          name
+        }
+        parent {
+          id
+        }
       }
     }
   }
