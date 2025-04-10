@@ -4,17 +4,20 @@ import { gql } from "@/__generated__";
 export const GET_POSTS = gql(`
   query Posts($page: Int, $limit: Int) {
     posts(page: $page, limit: $limit) {
-      id
-      title
-      createdAt
-      likesCount
-      category {
-        name
-      }
-      author {
+      posts {
         id
-        name
+        title
+        createdAt
+        likesCount
+        category {
+          name
+        }
+        author {
+          id
+          name
+        }
       }
+      totalCount
     }
   }
 `);
@@ -145,12 +148,53 @@ export const UPDATE_POST = gql(`
   }
 `);
 
-// GraphQL query to get all categories
+// GraphQL query for getting all categories
 export const GET_CATEGORIES = gql(`
   query Categories {
     categories {
       id
       name
+    }
+  }
+`);
+
+// GraphQL query for searching posts
+export const SEARCH_POSTS = gql(`
+  query SearchPosts($search: String!, $page: Int, $limit: Int) {
+    searchPosts(search: $search, page: $page, limit: $limit) {
+      posts {
+        id
+        title
+        createdAt
+        likesCount
+        category {
+          name
+        }
+        author {
+          id
+          name
+        }
+      }
+      totalCount
+    }
+  }
+`);
+
+// GraphQL query for posts by category
+export const POSTS_BY_CATEGORY = gql(`
+  query PostsByCategory($categoryId: ID!, $page: Int, $limit: Int) {
+    postsByCategory(categoryId: $categoryId, page: $page, limit: $limit) {
+      id
+      title
+      createdAt
+      likesCount
+      category {
+        name
+      }
+      author {
+        id
+        name
+      }
     }
   }
 `);
