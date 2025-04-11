@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Web Package - Next.js Frontend
 
-## Getting Started
+## Overview
 
-First, run the development server:
+The Web package is a modern frontend application built with Next.js and Apollo Client. It provides the user interface for the Y application, connecting to the GraphQL API to fetch and manipulate data.
+
+## Tech Stack
+
+- **Next.js**: React framework for production
+- **React**: UI library (v19)
+- **Apollo Client**: GraphQL client for data fetching
+- **Tailwind CSS**: Utility-first CSS framework
+- **TypeScript**: Type-safe JavaScript
+- **Radix UI**: Accessible UI components
+- **React Hook Form**: Form handling
+- **Zod**: Schema validation
+
+## Installation
+
+From the root of the monorepo:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Or from this package directory:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd packages/web
+bun install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Usage
 
-## Learn More
+### Development Mode
 
-To learn more about Next.js, take a look at the following resources:
+To run the web application in development mode with hot reloading:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+bun run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-## Deploy on Vercel
+### Build for Production
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To build the application for production:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+bun run build
+```
+
+### Start Production Server
+
+To start the production server:
+
+```bash
+bun run start
+```
+
+### GraphQL Code Generation
+
+To generate TypeScript types from GraphQL operations:
+
+```bash
+bun run codegen
+```
+
+## Project Structure
+
+```
+web/
+├── public/          # Static assets
+├── src/
+│   ├── app/         # Next.js app router
+│   ├── components/  # Reusable UI components
+│   ├── lib/         # Utility functions and hooks
+│   ├── graphql/     # GraphQL operations and types
+│   └── styles/      # Global styles
+├── apollo-client.ts # Apollo Client configuration
+├── codegen.ts       # GraphQL code generation config
+└── package.json     # Web package dependencies
+```
+
+## Features
+
+### Core Features
+
+- [x] **Modern UI**: Clean and responsive user interface
+- [x] **GraphQL Integration**: Apollo Client for data fetching
+- [x] **Authentication**: JWT-based authentication with secure storage
+- [x] **Type Safety**: Full TypeScript support
+- [x] **Component Library**: Reusable UI components with Radix UI
+- [x] **Form Handling**: Efficient form management with React Hook Form and Zod
+- [x] **Theming**: Light and dark mode support with next-themes
+- [x] **Code Generation**: Automatic TypeScript type generation from GraphQL operations
+
+### User Interface
+
+- [x] **Authentication Screens**
+  - [x] Login and registration forms
+  - [x] Password recovery
+  - [x] Profile management
+- [x] **Content Creation**
+  - [x] Post editor with rich text formatting
+  - [x] Media upload and embedding
+  - [x] Draft saving and publishing
+- [x] **Social Features**
+  - [x] Interactive feed with infinite scrolling
+  - [x] Comment threads and replies
+  - [x] Like and share functionality
+- [x] **Discovery**
+  - [x] Search interface
+  - [x] Trending content section
+  - [x] User recommendations
