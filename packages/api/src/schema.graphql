@@ -151,6 +151,12 @@ type Query {
     limit: Int = 20
     offset: Int = 0
   ): PostsResult!
+  postsByUser(
+    userId: ID!
+    page: Int = 1
+    limit: Int = 20
+    offset: Int = 0
+  ): PostsResult!
   post(id: ID!): Post
   postComments(postId: ID!): [Comment!]!
   commentReplies(commentId: ID!): [Comment!]!

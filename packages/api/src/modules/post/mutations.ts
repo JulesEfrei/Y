@@ -8,6 +8,37 @@ import {
 } from "../../utils/errorHandler";
 
 export const postMutations: MutationResolvers = {
+  deletePost: async (_, { id }, context) => {
+    try {
+      assertAuthenticated(context);
+
+      // Verify the post exists and belongs to the user
+      const existingPost = await context.prisma.post.findUnique({
+        where: { id },
+        include: { author: true },
+      });
+
+      if (!existingPost) {
+        return createErrorResponse(ErrorCode.NOT_FOUND, "Post not found");
+      }
+
+      if (existingPost.author.id !== context.user.id) {
+        return createErrorResponse(
+          ErrorCode.UNAUTHORIZED,
+          "You can only delete your own posts"
+        );
+      }
+
+      // Delete the post (comments, likes, and commentLikes will be deleted automatically via cascade)
+      await context.prisma.post.delete({
+        where: { id },
+      });
+
+      return createSuccessResponse({ message: "Post deleted successfully" });
+    } catch (error) {
+      return handlePrismaError(error);
+    }
+  },
   createPost: async (_, { title, content, categoryName }, context) => {
     try {
       assertAuthenticated(context);

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useMutation, useQuery, gql } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import BackButton from "@/components/button/BackButton";
 import { CREATE_CATEGORY, CREATE_POST, GET_CATEGORIES } from "@/lib/queries";
 
@@ -26,11 +26,7 @@ export default function NewPostPage() {
     category?: string;
   }>({});
 
-  const {
-    data: categoriesData,
-    loading: loadingCategories,
-    refetch,
-  } = useQuery(GET_CATEGORIES);
+  const { data: categoriesData, loading, refetch } = useQuery(GET_CATEGORIES);
 
   const [createCategory, { loading: creatingCategory }] = useMutation(
     CREATE_CATEGORY,
@@ -60,7 +56,7 @@ export default function NewPostPage() {
     onCompleted: (data: any) => {
       if (data.createPost.success) {
         toast.success("Post created successfully!");
-        router.push(`/posts/${data.createPost.post!.id}`);
+        redirect(`/posts/${data.createPost.post!.id}`);
       } else {
         toast.error("Error", {
           description: data.createPost.message || "Failed to create post",
@@ -76,8 +72,7 @@ export default function NewPostPage() {
 
   // Redirect if not logged in
   if (!isLoading && !user) {
-    router.push("/auth/login?returnUrl=/posts/new");
-    return null;
+    redirect("/auth/login?returnUrl=/posts/new");
   }
 
   const validateForm = () => {

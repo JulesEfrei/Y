@@ -49,6 +49,12 @@ export default function NavBar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/my-posts" className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>My Posts</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>

@@ -229,6 +229,28 @@ export const POSTS_BY_CATEGORY = gql(`
   }
 `);
 
+// GraphQL query for posts by user
+export const POSTS_BY_USER = gql(`
+  query PostsByUser($userId: ID!, $page: Int, $limit: Int) {
+    postsByUser(userId: $userId, page: $page, limit: $limit) {
+      posts {
+        id
+        title
+        createdAt
+        likesCount
+        category {
+          name
+        }
+        author {
+          id
+          name
+        }
+      }
+      totalCount
+    }
+  }
+`);
+
 // GraphQL mutation for creating a category
 export const CREATE_CATEGORY = gql(`
   mutation CreateCategory($name: String!) {
@@ -318,6 +340,20 @@ export const GET_POPULAR_POSTS = gql(`
         }
       }
       totalCount
+    }
+  }
+`);
+
+// GraphQL mutation for deleting a post
+export const DELETE_POST = gql(`
+  mutation DeletePost($id: ID!) {
+    deletePost(id: $id) {
+      code
+      success
+      message
+      post {
+        id
+      }
     }
   }
 `);

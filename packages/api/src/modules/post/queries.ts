@@ -12,7 +12,7 @@ export const postQueries: QueryResolvers = {
       }),
       prisma.post.count(),
     ]);
-    
+
     return {
       posts: formatPrismaResults(posts),
       totalCount,
@@ -59,7 +59,7 @@ export const postQueries: QueryResolvers = {
     { prisma }
   ) => {
     const skip = (page - 1) * limit + offset;
-    
+
     const [posts, totalCount] = await Promise.all([
       prisma.post.findMany({
         where: { categoryId },
@@ -71,7 +71,7 @@ export const postQueries: QueryResolvers = {
         where: { categoryId },
       }),
     ]);
-    
+
     return {
       posts: formatPrismaResults(posts),
       totalCount,
@@ -97,6 +97,31 @@ export const postQueries: QueryResolvers = {
 
     return {
       posts: formatPrismaResults(sortedPosts),
+      totalCount,
+    };
+  },
+
+  postsByUser: async (
+    _,
+    { userId, page = 1, limit = 20, offset = 0 },
+    { prisma }
+  ) => {
+    const skip = (page - 1) * limit + offset;
+
+    const [posts, totalCount] = await Promise.all([
+      prisma.post.findMany({
+        where: { authorId: userId },
+        take: limit,
+        skip: skip,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.post.count({
+        where: { authorId: userId },
+      }),
+    ]);
+
+    return {
+      posts: formatPrismaResults(posts),
       totalCount,
     };
   },

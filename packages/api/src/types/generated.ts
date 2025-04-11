@@ -115,7 +115,7 @@ export type Mutation = {
   deletePost: PostResponse;
   replyToComment: CommentResponse;
   signIn: AuthResponse;
-  signOut: MutationResponse;
+  signOut: SignOutResponse;
   signUp: AuthResponse;
   toggleCommentLike: CommentLikeResponse;
   toggleLike: LikeResponse;
@@ -251,6 +251,7 @@ export type Query = {
   postComments: Array<Comment>;
   posts: PostsResult;
   postsByCategory: PostsResult;
+  postsByUser: PostsResult;
   searchPosts: PostsResult;
   user?: Maybe<User>;
   users: Array<User>;
@@ -299,6 +300,14 @@ export type QueryPostsByCategoryArgs = {
 };
 
 
+export type QueryPostsByUserArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  userId: Scalars['ID']['input'];
+};
+
+
 export type QuerySearchPostsArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -309,6 +318,13 @@ export type QuerySearchPostsArgs = {
 
 export type QueryUserArgs = {
   id: Scalars['ID']['input'];
+};
+
+export type SignOutResponse = MutationResponse & {
+  __typename?: 'SignOutResponse';
+  code: Scalars['Int']['output'];
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
 };
 
 export type User = {
@@ -394,7 +410,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
-  MutationResponse: ( Omit<AuthResponse, 'user'> & { user?: Maybe<_RefType['User']> } ) | ( Omit<CategoryResponse, 'category'> & { category?: Maybe<_RefType['Category']> } ) | ( Omit<CommentLikeResponse, 'commentLike'> & { commentLike?: Maybe<_RefType['CommentLike']> } ) | ( Omit<CommentResponse, 'comment'> & { comment?: Maybe<_RefType['Comment']> } ) | ( Omit<LikeResponse, 'like'> & { like?: Maybe<_RefType['Like']> } ) | ( Omit<PostResponse, 'post'> & { post?: Maybe<_RefType['Post']> } );
+  MutationResponse: ( Omit<AuthResponse, 'user'> & { user?: Maybe<_RefType['User']> } ) | ( Omit<CategoryResponse, 'category'> & { category?: Maybe<_RefType['Category']> } ) | ( Omit<CommentLikeResponse, 'commentLike'> & { commentLike?: Maybe<_RefType['CommentLike']> } ) | ( Omit<CommentResponse, 'comment'> & { comment?: Maybe<_RefType['Comment']> } ) | ( Omit<LikeResponse, 'like'> & { like?: Maybe<_RefType['Like']> } ) | ( Omit<PostResponse, 'post'> & { post?: Maybe<_RefType['Post']> } ) | ( SignOutResponse );
 };
 
 /** Mapping between all available schema types and the resolvers types */
@@ -418,6 +434,7 @@ export type ResolversTypes = {
   PostResponse: ResolverTypeWrapper<Omit<PostResponse, 'post'> & { post?: Maybe<ResolversTypes['Post']> }>;
   PostsResult: ResolverTypeWrapper<Omit<PostsResult, 'posts'> & { posts: Array<ResolversTypes['Post']> }>;
   Query: ResolverTypeWrapper<{}>;
+  SignOutResponse: ResolverTypeWrapper<SignOutResponse>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   User: ResolverTypeWrapper<User>;
 };
@@ -443,6 +460,7 @@ export type ResolversParentTypes = {
   PostResponse: Omit<PostResponse, 'post'> & { post?: Maybe<ResolversParentTypes['Post']> };
   PostsResult: Omit<PostsResult, 'posts'> & { posts: Array<ResolversParentTypes['Post']> };
   Query: {};
+  SignOutResponse: SignOutResponse;
   String: Scalars['String']['output'];
   User: User;
 };
@@ -542,7 +560,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   deletePost?: Resolver<ResolversTypes['PostResponse'], ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'id'>>;
   replyToComment?: Resolver<ResolversTypes['CommentResponse'], ParentType, ContextType, RequireFields<MutationReplyToCommentArgs, 'commentId' | 'content'>>;
   signIn?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInArgs, 'email' | 'password'>>;
-  signOut?: Resolver<ResolversTypes['MutationResponse'], ParentType, ContextType>;
+  signOut?: Resolver<ResolversTypes['SignOutResponse'], ParentType, ContextType>;
   signUp?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'email' | 'name' | 'password'>>;
   toggleCommentLike?: Resolver<ResolversTypes['CommentLikeResponse'], ParentType, ContextType, RequireFields<MutationToggleCommentLikeArgs, 'commentId'>>;
   toggleLike?: Resolver<ResolversTypes['LikeResponse'], ParentType, ContextType, RequireFields<MutationToggleLikeArgs, 'postId'>>;
@@ -552,7 +570,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
 };
 
 export type MutationResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MutationResponse'] = ResolversParentTypes['MutationResponse']> = {
-  __resolveType: TypeResolveFn<'AuthResponse' | 'CategoryResponse' | 'CommentLikeResponse' | 'CommentResponse' | 'LikeResponse' | 'PostResponse', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthResponse' | 'CategoryResponse' | 'CommentLikeResponse' | 'CommentResponse' | 'LikeResponse' | 'PostResponse' | 'SignOutResponse', ParentType, ContextType>;
   code?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -596,9 +614,17 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
   postComments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<QueryPostCommentsArgs, 'postId'>>;
   posts?: Resolver<ResolversTypes['PostsResult'], ParentType, ContextType, RequireFields<QueryPostsArgs, 'limit' | 'offset' | 'page'>>;
   postsByCategory?: Resolver<ResolversTypes['PostsResult'], ParentType, ContextType, RequireFields<QueryPostsByCategoryArgs, 'categoryId' | 'limit' | 'offset' | 'page'>>;
+  postsByUser?: Resolver<ResolversTypes['PostsResult'], ParentType, ContextType, RequireFields<QueryPostsByUserArgs, 'limit' | 'offset' | 'page' | 'userId'>>;
   searchPosts?: Resolver<ResolversTypes['PostsResult'], ParentType, ContextType, RequireFields<QuerySearchPostsArgs, 'limit' | 'offset' | 'page' | 'search'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+};
+
+export type SignOutResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SignOutResponse'] = ResolversParentTypes['SignOutResponse']> = {
+  code?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
@@ -631,6 +657,7 @@ export type Resolvers<ContextType = Context> = {
   PostResponse?: PostResponseResolvers<ContextType>;
   PostsResult?: PostsResultResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  SignOutResponse?: SignOutResponseResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 };
 

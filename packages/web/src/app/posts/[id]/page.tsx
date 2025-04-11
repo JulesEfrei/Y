@@ -10,6 +10,7 @@ import createApolloClient from "../../../../apollo-client";
 import { GET_POST } from "@/lib/queries";
 
 import EditPostButton from "@/components/button/EditPostButton";
+import DeletePostButton from "@/components/button/DeletePostButton";
 import CommentWithReplies from "@/components/comment/CommentWithReplies";
 
 export default async function PostPage({
@@ -40,7 +41,10 @@ export default async function PostPage({
           <div className="flex justify-between items-start mb-4">
             <h1 className="text-3xl font-bold">{post.title}</h1>
 
-            <EditPostButton postId={post.id} authorId={post.author.id} />
+            <div className="flex gap-2">
+              <EditPostButton postId={post.id} authorId={post.author.id} />
+              <DeletePostButton postId={post.id} authorId={post.author.id} />
+            </div>
           </div>
 
           <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
@@ -54,7 +58,7 @@ export default async function PostPage({
               )}
             </div>
             <div suppressHydrationWarning>
-              {format(new Date(parseInt(post.createdAt)), "MMM dd, yyyy")}
+              {format(new Date(post.createdAt), "MMM dd, yyyy")}
             </div>
           </div>
         </div>

@@ -3,7 +3,6 @@ import {
   InMemoryCache,
   createHttpLink,
   from,
-  HttpLink,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 
@@ -12,9 +11,9 @@ export default function createApolloClient() {
   const httpLink = createHttpLink({
     uri: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/graphql",
     // Activer l'envoi automatique des cookies avec les requêtes
-    credentials: 'include',
+    credentials: "include",
     fetchOptions: {
-      credentials: 'include',
+      credentials: "include",
     },
   });
 
@@ -43,14 +42,14 @@ export default function createApolloClient() {
     defaultOptions: {
       watchQuery: {
         fetchPolicy: "cache-and-network",
-        errorPolicy: 'ignore',
+        errorPolicy: "ignore",
       },
       query: {
         fetchPolicy: "network-only",
-        errorPolicy: 'all',
+        errorPolicy: "all",
       },
       mutate: {
-        errorPolicy: 'all',
+        errorPolicy: "all",
       },
     },
   });
