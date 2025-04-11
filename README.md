@@ -38,6 +38,10 @@ bun run dev
 ```
 
 This will start both the API server and the web application in development mode with hot reloading.
+You can connect with the following demo account:
+
+- **Email**: demo@y.com
+- **Password**: demodemo
 
 ### GraphQL Code Generation
 

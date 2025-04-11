@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --watch index.ts",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "seed": "prisma db seed"
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",
@@ -27,5 +28,8 @@
     "@types/jsonwebtoken": "^9.0.5",
     "prisma": "^5.10.0",
     "typescript": "^5.0.0"
+  },
+  "prisma": {
+    "seed": "bun run prisma/seed.ts"
   }
 }
